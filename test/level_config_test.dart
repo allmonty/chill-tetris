@@ -1,7 +1,53 @@
+import 'dart:io';
+
+import 'package:chill_tetris/models/board.dart';
 import 'package:chill_tetris/models/level_config.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  group('Shipped levels.json', () {
+    late List<LevelConfig> levels;
+
+    setUpAll(() {
+      final source = File('assets/levels/levels.json').readAsStringSync();
+      levels = LevelConfig.listFromJsonString(source);
+    });
+
+    test('has 15 levels numbered 1..15', () {
+      expect(levels.length, 15);
+      expect(levels.map((l) => l.level), List.generate(15, (i) => i + 1));
+    });
+
+    test('target scores increase monotonically', () {
+      for (var i = 1; i < levels.length; i++) {
+        expect(levels[i].targetScore, greaterThan(levels[i - 1].targetScore));
+      }
+    });
+
+    test('every initial cell is on the board', () {
+      for (final level in levels) {
+        for (final cell in level.initialCells) {
+          expect(cell.x, inInclusiveRange(0, Board.columns - 1));
+          expect(cell.y, inInclusiveRange(0, Board.rows - 1));
+          expect(cell.color, inInclusiveRange(0, 6));
+        }
+      }
+    });
+
+    test('no starting row is completely filled', () {
+      for (final level in levels) {
+        final perRow = <int, int>{};
+        for (final cell in level.initialCells) {
+          perRow.update(cell.y, (v) => v + 1, ifAbsent: () => 1);
+        }
+        for (final count in perRow.values) {
+          expect(count, lessThan(Board.columns),
+              reason: 'Level ${level.level} has a pre-filled full row');
+        }
+      }
+    });
+  });
+
   group('LevelConfig parsing', () {
     test('parses a valid level list', () {
       const source = '''

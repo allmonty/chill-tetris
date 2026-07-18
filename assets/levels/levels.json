@@ -1,0 +1,220 @@
+[
+  {
+    "level": 1,
+    "targetScore": 300,
+    "initialPieces": [
+      {"x": 0, "y": 19, "color": 0}, {"x": 1, "y": 19, "color": 0},
+      {"x": 2, "y": 19, "color": 3}, {"x": 3, "y": 19, "color": 3},
+      {"x": 6, "y": 19, "color": 2}, {"x": 7, "y": 19, "color": 2},
+      {"x": 8, "y": 19, "color": 6}, {"x": 9, "y": 19, "color": 6}
+    ]
+  },
+  {
+    "level": 2,
+    "targetScore": 500,
+    "initialPieces": [
+      {"x": 0, "y": 19, "color": 1}, {"x": 1, "y": 19, "color": 1},
+      {"x": 2, "y": 19, "color": 5}, {"x": 3, "y": 19, "color": 5},
+      {"x": 4, "y": 19, "color": 5}, {"x": 5, "y": 19, "color": 4},
+      {"x": 7, "y": 19, "color": 4}, {"x": 8, "y": 19, "color": 2},
+      {"x": 9, "y": 19, "color": 2}
+    ]
+  },
+  {
+    "level": 3,
+    "targetScore": 700,
+    "initialPieces": [
+      {"x": 0, "y": 19, "color": 6}, {"x": 1, "y": 19, "color": 6},
+      {"x": 2, "y": 19, "color": 0}, {"x": 3, "y": 19, "color": 0},
+      {"x": 4, "y": 19, "color": 0}, {"x": 6, "y": 19, "color": 3},
+      {"x": 7, "y": 19, "color": 3}, {"x": 8, "y": 19, "color": 3},
+      {"x": 9, "y": 19, "color": 1},
+      {"x": 0, "y": 18, "color": 6}, {"x": 1, "y": 18, "color": 6},
+      {"x": 8, "y": 18, "color": 1}, {"x": 9, "y": 18, "color": 1}
+    ]
+  },
+  {
+    "level": 4,
+    "targetScore": 900,
+    "initialPieces": [
+      {"x": 0, "y": 19, "color": 2}, {"x": 1, "y": 19, "color": 2},
+      {"x": 2, "y": 19, "color": 2}, {"x": 3, "y": 19, "color": 4},
+      {"x": 4, "y": 19, "color": 4}, {"x": 6, "y": 19, "color": 5},
+      {"x": 7, "y": 19, "color": 5}, {"x": 8, "y": 19, "color": 0},
+      {"x": 9, "y": 19, "color": 0},
+      {"x": 0, "y": 18, "color": 2}, {"x": 3, "y": 18, "color": 4},
+      {"x": 4, "y": 18, "color": 4}, {"x": 9, "y": 18, "color": 0}
+    ]
+  },
+  {
+    "level": 5,
+    "targetScore": 1100,
+    "initialPieces": [
+      {"x": 1, "y": 19, "color": 3}, {"x": 2, "y": 19, "color": 3},
+      {"x": 3, "y": 19, "color": 3}, {"x": 4, "y": 19, "color": 6},
+      {"x": 5, "y": 19, "color": 6}, {"x": 6, "y": 19, "color": 6},
+      {"x": 7, "y": 19, "color": 1}, {"x": 8, "y": 19, "color": 1},
+      {"x": 9, "y": 19, "color": 1},
+      {"x": 1, "y": 18, "color": 3}, {"x": 2, "y": 18, "color": 3},
+      {"x": 7, "y": 18, "color": 1}, {"x": 8, "y": 18, "color": 1}
+    ]
+  },
+  {
+    "level": 6,
+    "targetScore": 1300,
+    "initialPieces": [
+      {"x": 0, "y": 19, "color": 4}, {"x": 1, "y": 19, "color": 4},
+      {"x": 2, "y": 19, "color": 0}, {"x": 3, "y": 19, "color": 0},
+      {"x": 5, "y": 19, "color": 2}, {"x": 6, "y": 19, "color": 2},
+      {"x": 7, "y": 19, "color": 5}, {"x": 8, "y": 19, "color": 5},
+      {"x": 9, "y": 19, "color": 5},
+      {"x": 0, "y": 18, "color": 4}, {"x": 1, "y": 18, "color": 4},
+      {"x": 2, "y": 18, "color": 0}, {"x": 8, "y": 18, "color": 5},
+      {"x": 9, "y": 18, "color": 5}
+    ]
+  },
+  {
+    "level": 7,
+    "targetScore": 1500,
+    "initialPieces": [
+      {"x": 0, "y": 19, "color": 6}, {"x": 1, "y": 19, "color": 6},
+      {"x": 2, "y": 19, "color": 6}, {"x": 3, "y": 19, "color": 3},
+      {"x": 4, "y": 19, "color": 3}, {"x": 6, "y": 19, "color": 1},
+      {"x": 7, "y": 19, "color": 1}, {"x": 8, "y": 19, "color": 4},
+      {"x": 9, "y": 19, "color": 4},
+      {"x": 0, "y": 18, "color": 6}, {"x": 3, "y": 18, "color": 3},
+      {"x": 4, "y": 18, "color": 3}, {"x": 6, "y": 18, "color": 1},
+      {"x": 9, "y": 18, "color": 4},
+      {"x": 3, "y": 17, "color": 3}, {"x": 4, "y": 17, "color": 3}
+    ]
+  },
+  {
+    "level": 8,
+    "targetScore": 1700,
+    "initialPieces": [
+      {"x": 0, "y": 19, "color": 0}, {"x": 1, "y": 19, "color": 0},
+      {"x": 2, "y": 19, "color": 5}, {"x": 3, "y": 19, "color": 5},
+      {"x": 4, "y": 19, "color": 5}, {"x": 6, "y": 19, "color": 2},
+      {"x": 7, "y": 19, "color": 2}, {"x": 8, "y": 19, "color": 2},
+      {"x": 9, "y": 19, "color": 6},
+      {"x": 0, "y": 18, "color": 0}, {"x": 1, "y": 18, "color": 0},
+      {"x": 3, "y": 18, "color": 5}, {"x": 6, "y": 18, "color": 2},
+      {"x": 7, "y": 18, "color": 2}, {"x": 9, "y": 18, "color": 6}
+    ]
+  },
+  {
+    "level": 9,
+    "targetScore": 2000,
+    "initialPieces": [
+      {"x": 0, "y": 19, "color": 3}, {"x": 1, "y": 19, "color": 3},
+      {"x": 2, "y": 19, "color": 4}, {"x": 3, "y": 19, "color": 4},
+      {"x": 5, "y": 19, "color": 1}, {"x": 6, "y": 19, "color": 1},
+      {"x": 7, "y": 19, "color": 0}, {"x": 8, "y": 19, "color": 0},
+      {"x": 9, "y": 19, "color": 0},
+      {"x": 0, "y": 18, "color": 3}, {"x": 2, "y": 18, "color": 4},
+      {"x": 3, "y": 18, "color": 4}, {"x": 5, "y": 18, "color": 1},
+      {"x": 7, "y": 18, "color": 0}, {"x": 8, "y": 18, "color": 0},
+      {"x": 2, "y": 17, "color": 4}, {"x": 8, "y": 17, "color": 0}
+    ]
+  },
+  {
+    "level": 10,
+    "targetScore": 2300,
+    "initialPieces": [
+      {"x": 0, "y": 19, "color": 5}, {"x": 1, "y": 19, "color": 5},
+      {"x": 2, "y": 19, "color": 2}, {"x": 3, "y": 19, "color": 2},
+      {"x": 4, "y": 19, "color": 2}, {"x": 6, "y": 19, "color": 6},
+      {"x": 7, "y": 19, "color": 6}, {"x": 8, "y": 19, "color": 3},
+      {"x": 9, "y": 19, "color": 3},
+      {"x": 0, "y": 18, "color": 5}, {"x": 1, "y": 18, "color": 5},
+      {"x": 2, "y": 18, "color": 2}, {"x": 4, "y": 18, "color": 2},
+      {"x": 6, "y": 18, "color": 6}, {"x": 8, "y": 18, "color": 3},
+      {"x": 9, "y": 18, "color": 3},
+      {"x": 0, "y": 17, "color": 5}, {"x": 9, "y": 17, "color": 3}
+    ]
+  },
+  {
+    "level": 11,
+    "targetScore": 2600,
+    "initialPieces": [
+      {"x": 0, "y": 19, "color": 1}, {"x": 1, "y": 19, "color": 1},
+      {"x": 2, "y": 19, "color": 0}, {"x": 3, "y": 19, "color": 0},
+      {"x": 4, "y": 19, "color": 4}, {"x": 5, "y": 19, "color": 4},
+      {"x": 7, "y": 19, "color": 5}, {"x": 8, "y": 19, "color": 5},
+      {"x": 9, "y": 19, "color": 5},
+      {"x": 0, "y": 18, "color": 1}, {"x": 2, "y": 18, "color": 0},
+      {"x": 3, "y": 18, "color": 0}, {"x": 5, "y": 18, "color": 4},
+      {"x": 7, "y": 18, "color": 5}, {"x": 9, "y": 18, "color": 5},
+      {"x": 2, "y": 17, "color": 0}, {"x": 3, "y": 17, "color": 0}
+    ]
+  },
+  {
+    "level": 12,
+    "targetScore": 2900,
+    "initialPieces": [
+      {"x": 0, "y": 19, "color": 6}, {"x": 1, "y": 19, "color": 6},
+      {"x": 2, "y": 19, "color": 3}, {"x": 3, "y": 19, "color": 3},
+      {"x": 4, "y": 19, "color": 3}, {"x": 6, "y": 19, "color": 2},
+      {"x": 7, "y": 19, "color": 2}, {"x": 8, "y": 19, "color": 1},
+      {"x": 9, "y": 19, "color": 1},
+      {"x": 0, "y": 18, "color": 6}, {"x": 1, "y": 18, "color": 6},
+      {"x": 3, "y": 18, "color": 3}, {"x": 4, "y": 18, "color": 3},
+      {"x": 6, "y": 18, "color": 2}, {"x": 8, "y": 18, "color": 1},
+      {"x": 9, "y": 18, "color": 1},
+      {"x": 0, "y": 17, "color": 6}, {"x": 4, "y": 17, "color": 3},
+      {"x": 9, "y": 17, "color": 1}
+    ]
+  },
+  {
+    "level": 13,
+    "targetScore": 3300,
+    "initialPieces": [
+      {"x": 0, "y": 19, "color": 4}, {"x": 1, "y": 19, "color": 4},
+      {"x": 2, "y": 19, "color": 5}, {"x": 3, "y": 19, "color": 5},
+      {"x": 5, "y": 19, "color": 0}, {"x": 6, "y": 19, "color": 0},
+      {"x": 7, "y": 19, "color": 6}, {"x": 8, "y": 19, "color": 6},
+      {"x": 9, "y": 19, "color": 6},
+      {"x": 0, "y": 18, "color": 4}, {"x": 1, "y": 18, "color": 4},
+      {"x": 2, "y": 18, "color": 5}, {"x": 5, "y": 18, "color": 0},
+      {"x": 6, "y": 18, "color": 0}, {"x": 8, "y": 18, "color": 6},
+      {"x": 9, "y": 18, "color": 6},
+      {"x": 0, "y": 17, "color": 4}, {"x": 5, "y": 17, "color": 0},
+      {"x": 9, "y": 17, "color": 6}
+    ]
+  },
+  {
+    "level": 14,
+    "targetScore": 3600,
+    "initialPieces": [
+      {"x": 0, "y": 19, "color": 2}, {"x": 1, "y": 19, "color": 2},
+      {"x": 2, "y": 19, "color": 1}, {"x": 3, "y": 19, "color": 1},
+      {"x": 4, "y": 19, "color": 3}, {"x": 6, "y": 19, "color": 4},
+      {"x": 7, "y": 19, "color": 4}, {"x": 8, "y": 19, "color": 0},
+      {"x": 9, "y": 19, "color": 0},
+      {"x": 0, "y": 18, "color": 2}, {"x": 2, "y": 18, "color": 1},
+      {"x": 3, "y": 18, "color": 1}, {"x": 4, "y": 18, "color": 3},
+      {"x": 6, "y": 18, "color": 4}, {"x": 8, "y": 18, "color": 0},
+      {"x": 9, "y": 18, "color": 0},
+      {"x": 0, "y": 17, "color": 2}, {"x": 3, "y": 17, "color": 1},
+      {"x": 4, "y": 17, "color": 3}, {"x": 9, "y": 17, "color": 0}
+    ]
+  },
+  {
+    "level": 15,
+    "targetScore": 4000,
+    "initialPieces": [
+      {"x": 0, "y": 19, "color": 5}, {"x": 1, "y": 19, "color": 5},
+      {"x": 2, "y": 19, "color": 6}, {"x": 3, "y": 19, "color": 6},
+      {"x": 4, "y": 19, "color": 2}, {"x": 5, "y": 19, "color": 2},
+      {"x": 7, "y": 19, "color": 3}, {"x": 8, "y": 19, "color": 3},
+      {"x": 9, "y": 19, "color": 4},
+      {"x": 0, "y": 18, "color": 5}, {"x": 1, "y": 18, "color": 5},
+      {"x": 3, "y": 18, "color": 6}, {"x": 4, "y": 18, "color": 2},
+      {"x": 5, "y": 18, "color": 2}, {"x": 7, "y": 18, "color": 3},
+      {"x": 9, "y": 18, "color": 4},
+      {"x": 0, "y": 17, "color": 5}, {"x": 4, "y": 17, "color": 2},
+      {"x": 5, "y": 17, "color": 2}, {"x": 9, "y": 17, "color": 4},
+      {"x": 0, "y": 16, "color": 5}, {"x": 9, "y": 16, "color": 4}
+    ]
+  }
+]

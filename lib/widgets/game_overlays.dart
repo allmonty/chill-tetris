@@ -242,21 +242,27 @@ class LevelClearOverlay extends StatelessWidget {
   const LevelClearOverlay({
     super.key,
     required this.score,
+    required this.isLastLevel,
     required this.onNext,
     required this.onMenu,
   });
 
   final int score;
+  final bool isLastLevel;
   final VoidCallback onNext;
   final VoidCallback onMenu;
 
   @override
   Widget build(BuildContext context) => _ModalCard(
-        title: 'Level Clear!',
+        title: isLastLevel ? 'All Levels Clear!' : 'Level Clear!',
         subtitle: 'Score: $score',
         actions: [
-          OverlayButton(label: 'Next Level', onTap: onNext),
-          OverlayButton(label: 'Menu', onTap: onMenu, filled: false),
+          if (!isLastLevel) OverlayButton(label: 'Next Level', onTap: onNext),
+          OverlayButton(
+            label: isLastLevel ? 'Menu' : 'Back to Levels',
+            onTap: onMenu,
+            filled: isLastLevel,
+          ),
         ],
       );
 }

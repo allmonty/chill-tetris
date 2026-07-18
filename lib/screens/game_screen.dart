@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../game/game_mode.dart';
 import '../game/tetris_game.dart';
+import '../models/level_config.dart';
 import '../services/progress_service.dart';
 import '../theme/palette.dart';
 import '../widgets/game_overlays.dart';
@@ -30,6 +31,8 @@ class _GameScreenState extends State<GameScreen> {
 
   ProgressService? _progress;
   bool _newHighScore = false;
+  LevelConfig? _nextLevelConfig;
+  bool _isLastLevel = false;
 
   @override
   void initState() {
@@ -41,6 +44,22 @@ class _GameScreenState extends State<GameScreen> {
       onWin: _handleWin,
     );
     ProgressService.load().then((p) => _progress = p);
+    if (widget.mode case StageMode(:final level)) {
+      _resolveNextLevel(level.level);
+    }
+  }
+
+  Future<void> _resolveNextLevel(int current) async {
+    final levels = await LevelConfig.loadAll();
+    if (!mounted) return;
+    final idx = levels.indexWhere((l) => l.level == current);
+    setState(() {
+      if (idx >= 0 && idx + 1 < levels.length) {
+        _nextLevelConfig = levels[idx + 1];
+      } else {
+        _isLastLevel = true;
+      }
+    });
   }
 
   @override
@@ -86,9 +105,15 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _nextLevel() {
-    // Wired up fully in Session 5 when the level list is available; for now,
-    // returning to the menu is the safe default.
-    _backToMenu();
+    final next = _nextLevelConfig;
+    if (next == null) {
+      _backToMenu();
+      return;
+    }
+    Navigator.of(context).pushReplacementNamed(
+      GameScreen.route,
+      arguments: StageMode(next),
+    );
   }
 
   @override
@@ -115,6 +140,7 @@ class _GameScreenState extends State<GameScreen> {
               ),
           win: (_, game) => LevelClearOverlay(
                 score: game.score,
+                isLastLevel: _isLastLevel,
                 onNext: _nextLevel,
                 onMenu: _backToMenu,
               ),
