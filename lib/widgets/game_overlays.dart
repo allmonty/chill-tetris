@@ -4,9 +4,10 @@ import '../game/game_mode.dart';
 import '../game/tetris_game.dart';
 import '../theme/palette.dart';
 
-/// Top bar shown over the board: score, goal/speed, pause and back controls.
-class GameHud extends StatelessWidget {
-  const GameHud({
+/// A solid top bar that sits *above* the board (not floating over it): back
+/// button, the score/goal or score/speed readout, and a pause button.
+class GameTopBar extends StatelessWidget {
+  const GameTopBar({
     super.key,
     required this.game,
     required this.score,
@@ -23,57 +24,189 @@ class GameHud extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = Palette.current;
     final isStage = game.mode is StageMode;
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _IconButton(icon: Icons.arrow_back, onTap: onBack),
-            const Spacer(),
-            ValueListenableBuilder<int>(
-              valueListenable: score,
-              builder: (_, value, _) => Column(
-                children: [
-                  Text(
-                    isStage ? 'SCORE / GOAL' : 'SCORE',
-                    style: TextStyle(
-                      fontSize: 11,
-                      letterSpacing: 1.5,
-                      color: p.textSecondary,
-                    ),
-                  ),
-                  AnimatedScale(
-                    scale: 1.0,
-                    duration: const Duration(milliseconds: 150),
-                    child: Text(
-                      isStage ? '$value / ${game.targetScore}' : '$value',
-                      style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.w700,
-                        color: p.textPrimary,
-                      ),
-                    ),
-                  ),
-                  if (!isStage)
-                    Text(
-                      'Speed ${game.speedLevel + 1}',
-                      style: TextStyle(fontSize: 12, color: p.textSecondary),
-                    ),
-                ],
+    return Container(
+      decoration: BoxDecoration(
+        color: p.surface,
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 14),
+          child: Row(
+            children: [
+              _RoundIconButton(icon: Icons.arrow_back, onTap: onBack),
+              Expanded(
+                child: ValueListenableBuilder<int>(
+                  valueListenable: score,
+                  builder: (_, value, _) => isStage
+                      ? _StageReadout(
+                          score: value,
+                          target: game.targetScore,
+                        )
+                      : _InfiniteReadout(
+                          score: value,
+                          speed: game.speedLevel + 1,
+                        ),
+                ),
               ),
-            ),
-            const Spacer(),
-            _IconButton(icon: Icons.pause, onTap: onPause),
-          ],
+              _RoundIconButton(icon: Icons.pause, onTap: onPause),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _IconButton extends StatelessWidget {
-  const _IconButton({required this.icon, required this.onTap});
+/// Infinite mode: a centered score with a small speed chip beside it.
+class _InfiniteReadout extends StatelessWidget {
+  const _InfiniteReadout({required this.score, required this.speed});
+
+  final int score;
+  final int speed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _Label('SCORE'),
+        const SizedBox(height: 2),
+        _ScoreNumber(score),
+        const SizedBox(height: 6),
+        _Chip('Speed $speed'),
+      ],
+    );
+  }
+}
+
+/// Stage mode: score over a slim progress bar toward the goal.
+class _StageReadout extends StatelessWidget {
+  const _StageReadout({required this.score, required this.target});
+
+  final int score;
+  final int target;
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = target <= 0 ? 0.0 : (score / target).clamp(0.0, 1.0);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            _ScoreNumber(score),
+            const SizedBox(width: 6),
+            _Label('/ $target'),
+          ],
+        ),
+        const SizedBox(height: 6),
+        _ProgressBar(progress: progress),
+      ],
+    );
+  }
+}
+
+class _ScoreNumber extends StatelessWidget {
+  const _ScoreNumber(this.value);
+
+  final int value;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = Palette.current;
+    return Text(
+      '$value',
+      style: TextStyle(
+        fontSize: 28,
+        fontWeight: FontWeight.w700,
+        height: 1,
+        color: p.textPrimary,
+      ),
+    );
+  }
+}
+
+class _Label extends StatelessWidget {
+  const _Label(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = Palette.current;
+    return Text(
+      text,
+      style: TextStyle(
+        fontSize: 12,
+        letterSpacing: 1.5,
+        fontWeight: FontWeight.w600,
+        color: p.textSecondary,
+      ),
+    );
+  }
+}
+
+class _Chip extends StatelessWidget {
+  const _Chip(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = Palette.current;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: p.accent.withValues(alpha: 0.25),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: p.textPrimary,
+        ),
+      ),
+    );
+  }
+}
+
+class _ProgressBar extends StatelessWidget {
+  const _ProgressBar({required this.progress});
+
+  final double progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = Palette.current;
+    return SizedBox(
+      width: 160,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(4),
+        child: TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0, end: progress),
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+          builder: (_, value, _) => LinearProgressIndicator(
+            value: value,
+            minHeight: 6,
+            backgroundColor: p.background,
+            valueColor: AlwaysStoppedAnimation<Color>(p.accent),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RoundIconButton extends StatelessWidget {
+  const _RoundIconButton({required this.icon, required this.onTap});
 
   final IconData icon;
   final VoidCallback onTap;
@@ -87,7 +220,7 @@ class _IconButton extends StatelessWidget {
         width: 44,
         height: 44,
         decoration: BoxDecoration(
-          color: p.surface,
+          color: p.background,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Icon(icon, color: p.textPrimary, size: 22),

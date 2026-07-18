@@ -21,7 +21,6 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
-  static const hud = 'hud';
   static const pause = 'pause';
   static const gameOver = 'gameOver';
   static const win = 'win';
@@ -94,10 +93,9 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _restart() {
-    Navigator.of(context).pushReplacementNamed(
-      GameScreen.route,
-      arguments: widget.mode,
-    );
+    Navigator.of(
+      context,
+    ).pushReplacementNamed(GameScreen.route, arguments: widget.mode);
   }
 
   void _backToMenu() {
@@ -110,10 +108,9 @@ class _GameScreenState extends State<GameScreen> {
       _backToMenu();
       return;
     }
-    Navigator.of(context).pushReplacementNamed(
-      GameScreen.route,
-      arguments: StageMode(next),
-    );
+    Navigator.of(
+      context,
+    ).pushReplacementNamed(GameScreen.route, arguments: StageMode(next));
   }
 
   @override
@@ -121,30 +118,43 @@ class _GameScreenState extends State<GameScreen> {
     final p = Palette.current;
     return Scaffold(
       backgroundColor: p.background,
-      body: GameWidget<TetrisGame>(
-        game: _game,
-        initialActiveOverlays: const [hud],
-        overlayBuilderMap: {
-          hud: (_, game) => GameHud(
-                game: game,
-                score: _score,
-                onPause: _togglePause,
-                onBack: _backToMenu,
+      body: Column(
+        children: [
+          // A real top bar with its own vertical space — the board lives below
+          // it and never overlaps it.
+          GameTopBar(
+            game: _game,
+            score: _score,
+            onPause: _togglePause,
+            onBack: _backToMenu,
+          ),
+          Expanded(
+            // Keep the board clear of the Android system nav bar / home
+            // indicator at the bottom (and any side insets).
+            child: SafeArea(
+              top: false,
+              child: GameWidget<TetrisGame>(
+                game: _game,
+                overlayBuilderMap: {
+                  pause: (_, _) =>
+                      PauseOverlay(onResume: _togglePause, onQuit: _backToMenu),
+                  gameOver: (_, game) => GameOverOverlay(
+                    score: game.score,
+                    isNewHighScore: _newHighScore,
+                    onRetry: _restart,
+                    onMenu: _backToMenu,
+                  ),
+                  win: (_, game) => LevelClearOverlay(
+                    score: game.score,
+                    isLastLevel: _isLastLevel,
+                    onNext: _nextLevel,
+                    onMenu: _backToMenu,
+                  ),
+                },
               ),
-          pause: (_, _) => PauseOverlay(onResume: _togglePause, onQuit: _backToMenu),
-          gameOver: (_, game) => GameOverOverlay(
-                score: game.score,
-                isNewHighScore: _newHighScore,
-                onRetry: _restart,
-                onMenu: _backToMenu,
-              ),
-          win: (_, game) => LevelClearOverlay(
-                score: game.score,
-                isLastLevel: _isLastLevel,
-                onNext: _nextLevel,
-                onMenu: _backToMenu,
-              ),
-        },
+            ),
+          ),
+        ],
       ),
     );
   }

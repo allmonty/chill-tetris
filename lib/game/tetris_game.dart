@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui' show Color;
 
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
@@ -84,6 +85,10 @@ class TetrisGame extends FlameGame with TapCallbacks, DragCallbacks {
 
   bool get _active =>
       !isPaused && !isOver && !hasWon && active != null && phase == GamePhase.playing;
+
+  // Let the Flutter scaffold background show around the centered board.
+  @override
+  Color backgroundColor() => const Color(0x00000000);
 
   @override
   Future<void> onLoad() async {
