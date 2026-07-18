@@ -64,8 +64,8 @@ class GamePalette {
     name: 'Mid-Century Modern',
     background: Color(0xFFF1EFE9), // soft off-white
     surface: Color(0xFFDBD9D4), // warm light grey
-    boardBackground: Color(0xFFCDCDC9), // muted grey
-    gridLine: Color(0xFFDBD9D4), // barely-there lines
+    boardBackground: Color(0xFF4E4243), // dark walnut — pieces pop against it
+    gridLine: Color(0xFFF1EFE9), // light lines, drawn faint on the dark board
     textPrimary: Color(0xFF4E4243), // deep aubergine-brown
     textSecondary: Color(0xFF536D81), // slate blue
     textOnAccent: Color(0xFF4E4243),
@@ -79,7 +79,7 @@ class GamePalette {
       Color(0xFF9BB0BC), // dusty blue — S
       Color(0xFFD2A799), // clay pink — Z
       Color(0xFFCED5B6), // pale sage — J
-      Color(0xFF536D81), // slate blue — L
+      Color(0xFFB06757), // terracotta — L (was slate blue: too dark on the walnut board)
     ],
   );
 

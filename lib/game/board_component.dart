@@ -42,9 +42,9 @@ class BoardComponent extends PositionComponent
     );
     canvas.drawRRect(boardRect, Paint()..color = p.boardBackground);
 
-    // Grid lines.
+    // Grid lines — kept faint so they read as a soft grid, not a harsh cage.
     final gridPaint = Paint()
-      ..color = p.gridLine
+      ..color = p.gridLine.withValues(alpha: 0.07)
       ..strokeWidth = 1;
     for (var c = 1; c < Board.columns; c++) {
       final x = c * cellSize;
@@ -86,7 +86,7 @@ class BoardComponent extends PositionComponent
     final ghostRow = game.ghostRow();
     if (ghostRow != null && ghostRow != active.row) {
       final ghost = active.copy()..row = ghostRow;
-      final ghostColor = p.pieceColors[active.colorIndex].withValues(alpha: 0.22);
+      final ghostColor = p.pieceColors[active.colorIndex].withValues(alpha: 0.3);
       for (final cell in ghost.cells) {
         _drawCell(canvas, cell.dx, cell.dy, ghostColor);
       }
