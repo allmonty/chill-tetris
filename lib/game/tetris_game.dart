@@ -4,6 +4,7 @@ import 'dart:ui' show Color;
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
 
 import '../audio/sound_config.dart';
 import '../audio/sound_service.dart';
@@ -266,7 +267,25 @@ class TetrisGame extends FlameGame with TapCallbacks, DragCallbacks {
     _restElapsed = 0;
     _lockResets = 0;
     _spawnElapsed = 0;
-    nextPiece.value = _bag.peek();
+    _publishNextPiece();
+  }
+
+  /// Updates the [nextPiece] preview. The very first spawn runs inside
+  /// [onLoad], which Flame executes during `GameWidget`'s first layout — writing
+  /// to the notifier then would mark the already-built top bar dirty mid-build
+  /// and throw. In that (build/layout) phase we defer to just after the frame;
+  /// every later spawn comes from the game-loop tick, where an inline write is
+  /// safe.
+  void _publishNextPiece() {
+    final next = _bag.peek();
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (isMounted) nextPiece.value = next;
+      });
+    } else {
+      nextPiece.value = next;
+    }
   }
 
   void _addScore(int delta) {
