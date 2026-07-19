@@ -253,7 +253,7 @@ class _NextPieceChip extends StatelessWidget {
       width: 56,
       height: 44,
       decoration: BoxDecoration(
-        color: p.background,
+        color: p.boardBackground,
         borderRadius: BorderRadius.circular(12),
       ),
       child: ValueListenableBuilder<TetrominoType?>(

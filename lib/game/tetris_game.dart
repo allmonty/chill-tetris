@@ -74,6 +74,7 @@ class TetrisGame extends FlameGame with TapCallbacks, DragCallbacks {
   /// in the top bar). Null only before the first spawn.
   final ValueNotifier<TetrominoType?> nextPiece =
       ValueNotifier<TetrominoType?>(null);
+  bool _disposed = false;
 
   Piece? active;
   int score = 0;
@@ -275,13 +276,15 @@ class TetrisGame extends FlameGame with TapCallbacks, DragCallbacks {
   /// to the notifier then would mark the already-built top bar dirty mid-build
   /// and throw. In that (build/layout) phase we defer to just after the frame;
   /// every later spawn comes from the game-loop tick, where an inline write is
-  /// safe.
+  /// safe. The post-frame write is guarded only against disposal (not
+  /// `isMounted`, which isn't true yet that early and would drop the first
+  /// preview until the next spawn).
   void _publishNextPiece() {
     final next = _bag.peek();
     if (SchedulerBinding.instance.schedulerPhase ==
         SchedulerPhase.persistentCallbacks) {
       SchedulerBinding.instance.addPostFrameCallback((_) {
-        if (isMounted) nextPiece.value = next;
+        if (!_disposed) nextPiece.value = next;
       });
     } else {
       nextPiece.value = next;
@@ -448,6 +451,7 @@ class TetrisGame extends FlameGame with TapCallbacks, DragCallbacks {
 
   @override
   void onRemove() {
+    _disposed = true;
     nextPiece.dispose();
     super.onRemove();
   }
