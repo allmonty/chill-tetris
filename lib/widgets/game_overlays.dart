@@ -337,9 +337,15 @@ class OverlayButton extends StatelessWidget {
 }
 
 class PauseOverlay extends StatelessWidget {
-  const PauseOverlay({super.key, required this.onResume, required this.onQuit});
+  const PauseOverlay({
+    super.key,
+    required this.onResume,
+    required this.onSettings,
+    required this.onQuit,
+  });
 
   final VoidCallback onResume;
+  final VoidCallback onSettings;
   final VoidCallback onQuit;
 
   @override
@@ -347,6 +353,7 @@ class PauseOverlay extends StatelessWidget {
         title: 'Paused',
         actions: [
           OverlayButton(label: 'Resume', onTap: onResume),
+          OverlayButton(label: 'Settings', onTap: onSettings, filled: false),
           OverlayButton(label: 'Quit', onTap: onQuit, filled: false),
         ],
       );

@@ -7,6 +7,7 @@ import '../models/level_config.dart';
 import '../services/progress_service.dart';
 import '../theme/palette.dart';
 import '../widgets/game_overlays.dart';
+import 'settings_screen.dart';
 
 /// Hosts the Flame game and its Flutter overlays (HUD, pause, game over, win).
 class GameScreen extends StatefulWidget {
@@ -136,8 +137,12 @@ class _GameScreenState extends State<GameScreen> {
               child: GameWidget<TetrisGame>(
                 game: _game,
                 overlayBuilderMap: {
-                  pause: (_, _) =>
-                      PauseOverlay(onResume: _togglePause, onQuit: _backToMenu),
+                  pause: (_, _) => PauseOverlay(
+                    onResume: _togglePause,
+                    onSettings: () => Navigator.of(context)
+                        .pushNamed(SettingsScreen.route),
+                    onQuit: _backToMenu,
+                  ),
                   gameOver: (_, game) => GameOverOverlay(
                     score: game.score,
                     isNewHighScore: _newHighScore,

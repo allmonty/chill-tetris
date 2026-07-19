@@ -36,5 +36,6 @@ Uint8List synthesize(SoundSpec spec) {
     }
   }
 
+  declickEdges(buffer);
   return encodeWav(buffer, sr);
 }

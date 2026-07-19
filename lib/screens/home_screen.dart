@@ -6,6 +6,7 @@ import '../game/game_mode.dart';
 import '../theme/palette.dart';
 import 'game_screen.dart';
 import 'level_select_screen.dart';
+import 'settings_screen.dart';
 
 /// Landing screen: the game title and the two mode buttons.
 class HomeScreen extends StatelessWidget {
@@ -23,7 +24,7 @@ class HomeScreen extends StatelessWidget {
               alignment: Alignment.topRight,
               child: Padding(
                 padding: const EdgeInsets.all(12),
-                child: SoundToggleButton(),
+                child: _SettingsButton(),
               ),
             ),
             Padding(
@@ -134,35 +135,26 @@ class _MenuButtonState extends State<_MenuButton> {
   }
 }
 
-/// A speaker icon that toggles sound on/off and persists the choice.
-class SoundToggleButton extends StatelessWidget {
-  const SoundToggleButton({super.key});
+/// A gear icon opening the audio settings screen.
+class _SettingsButton extends StatelessWidget {
+  const _SettingsButton();
 
   @override
   Widget build(BuildContext context) {
     final p = Palette.current;
-    return ValueListenableBuilder<bool>(
-      valueListenable: SoundService.instance.enabled,
-      builder: (_, enabled, _) => GestureDetector(
-        onTap: () {
-          SoundService.instance.toggle();
-          if (SoundService.instance.enabled.value) {
-            SoundService.instance.play(Sfx.uiTap);
-          }
-        },
-        child: Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: p.surface,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(
-            enabled ? Icons.volume_up_rounded : Icons.volume_off_rounded,
-            color: enabled ? p.textPrimary : p.textSecondary,
-            size: 22,
-          ),
+    return GestureDetector(
+      onTap: () {
+        SoundService.instance.play(Sfx.uiTap);
+        Navigator.of(context).pushNamed(SettingsScreen.route);
+      },
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: p.surface,
+          borderRadius: BorderRadius.circular(12),
         ),
+        child: Icon(Icons.settings_rounded, color: p.textPrimary, size: 22),
       ),
     );
   }

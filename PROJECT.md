@@ -50,10 +50,12 @@ Two modes, chosen from the home screen:
   CustomPaint) — user preference.
 - **Gestures only**, no on-screen buttons — user preference; keeps the screen
   clean.
-- **All audio is synthesized in code** — no audio asset files. Sound effects and
-  music are generated from small data specs, mirroring how the color palette
-  works, so they're trivially editable. (User asked specifically to "code the
-  sounds.")
+- **Audio is defined in code, pre-rendered to committed assets** — sound
+  effects and music are generated from small data specs, mirroring how the
+  color palette works, so they're trivially editable (user asked specifically
+  to "code the sounds"). `tool/generate_audio.dart` renders each spec to a WAV
+  once at authoring time; the app bundles and plays those files, doing no DSP
+  at runtime (see §8/§9).
 - **Palette-driven theming** — colors are referenced by semantic role, so the
   whole game re-themes from one place.
 - **Pure Dart game models** kept separate from Flame/Flutter, so rules are unit
@@ -81,8 +83,10 @@ can reach them.
 
 ```
 lib/
-  main.dart                     App entry: portrait lock, routes (/ , /levels, /game),
-                                theme, and SoundService.instance.init() before runApp.
+  main.dart                     App entry: portrait lock, routes (/ , /levels, /game,
+                                /settings), theme, SoundService.instance.init() before
+                                runApp, and a NavigatorObserver that re-asserts music
+                                on every page transition (see §9).
   theme/
     palette.dart                GamePalette (semantic color roles) + midCenturyModern
                                 (default) and dusk (example). Palette.current is the
@@ -108,13 +112,16 @@ lib/
     cell_animator.dart          Per-cell tween tracker (scale/opacity/settle) advanced
                                 in update(dt), applied in render. Keeps Board anim-free.
   screens/
-    home_screen.dart            Title + Stage/Infinite buttons + SoundToggleButton.
-    level_select_screen.dart    4-col grid of 15 levels; locked/unlocked/complete states.
+    home_screen.dart            Title + Stage/Infinite buttons + gear button (Settings).
+    level_select_screen.dart    4-col grid of 50 levels; locked/unlocked/complete states.
     game_screen.dart            Hosts GameWidget in a Column under the top bar; wires
                                 overlays (pause/gameOver/win) and mode selection.
+    settings_screen.dart        Music/SFX sections: enable Switch + volume Slider each,
+                                reading/writing SoundService's notifiers.
   widgets/
     game_overlays.dart          GameTopBar (score/goal or score/speed, back, pause),
-                                and the pause / game-over / level-clear modal cards.
+                                and the pause (Resume/Settings/Quit) / game-over /
+                                level-clear modal cards.
   services/
     progress_service.dart       shared_preferences: unlocked level + infinite high score.
   audio/
@@ -123,20 +130,38 @@ lib/
     music_config.dart           Music "palette": MusicNote, MusicConfig (bpm, loop length,
                                 flat note list — bass/pad/melody voices).
     synth_core.dart             Shared DSP: frequencyForDegree, waveSample, pluckEnvelope,
-                                encodeWav. Used by both synths.
-    tone_synth.dart             synthesize(SoundSpec) -> WAV bytes (one-shot SFX).
-    music_synth.dart            synthesizeMusic() -> one seamless looping WAV.
-    sound_service.dart          Singleton. Loads prefs, synthesizes all SFX + music,
-                                plays with throttling, mute toggle, loops music. Degrades
-                                to silence if audio can't init.
+                                declickEdges, encodeWav. Used by both synths.
+    tone_synth.dart             synthesize(SoundSpec) -> WAV bytes (one-shot SFX). Only
+                                consumer today is tool/generate_audio.dart.
+    music_synth.dart            synthesizeMusic() -> one seamless looping WAV. Same.
+    audio_settings.dart         Pure prefs model: music/sfx enabled + volume, with
+                                one-time migration from the legacy sound_enabled key.
+    sound_service.dart          Singleton. Loads AudioSettings; each Sfx gets an AudioPool
+                                (preloaded, round-robin players so a retrigger never cuts
+                                off the previous play — see §8); music gets one preloaded
+                                looping AudioPlayer. Throttling + per-channel enable/volume.
+                                Degrades to silence if audio can't init.
+tool/
+  generate_audio.dart           CLI (`dart run tool/generate_audio.dart`): renders every
+                                Sfx + the music loop via tone_synth/music_synth and
+                                writes assets/audio/*.wav. Run after editing
+                                sound_config.dart / music_config.dart, then commit.
 assets/
   levels/levels.json            50 stage definitions + unlockedAtStart.
+  audio/*.wav                   Committed, pre-rendered SFX + music.wav (generated,
+                                never hand-edited — see tool/generate_audio.dart).
 test/
   board_test.dart               Collision, lock, line clear, top-out.
   tetromino_test.dart           Rotation / shapes.
   level_config_test.dart        JSON parse: valid, missing, out-of-range.
   tone_synth_test.dart          WAV header/format/duration/signal for every SFX.
   music_synth_test.dart         WAV validity, loop duration, signal, no clipping.
+  audio_assets_test.dart        Guards assets/audio/*.wav against the synth configs;
+                                fails with a "run: dart run tool/generate_audio.dart"
+                                hint if the committed files are stale.
+  audio_settings_test.dart      AudioSettings defaults, legacy-key migration, clamping.
+  settings_screen_test.dart     Settings screen renders both sections; toggling and
+                                disabling wire through to SoundService.
   widget_test.dart              Home screen renders title + buttons.
 ```
 
@@ -254,8 +279,9 @@ wrapped in `SafeArea(top: false)` to stay clear of the Android nav bar.
 
 ## 8. Audio — sound effects
 
-Everything is **synthesized at runtime** into WAV byte buffers; there are no
-audio files. Design mirrors the color palette so it's data-editable.
+Sounds are **defined in code, pre-rendered to committed WAV files**. Design
+mirrors the color palette so the *definitions* stay data-editable, but nothing
+is synthesized at runtime — the app just plays bundled assets.
 
 - **Definition** — [lib/audio/sound_config.dart](lib/audio/sound_config.dart):
   - Global: `masterVolume` (0.4), `baseFrequency` (392 Hz = G4), `scale`
@@ -269,18 +295,36 @@ audio files. Design mirrors the color palette so it's data-editable.
   dissonant even when retuned), soft sine/triangle waveforms, click-free
   attack/decay envelopes, low volume.
 - **Rendering** — `tone_synth.dart` (`synthesize`) builds the buffer using shared
-  DSP in `synth_core.dart`.
-- **Playback** — `sound_service.dart` (singleton): one `AudioPlayer` per event
-  (so sounds overlap), plays `BytesSource`, throttles rapid repeats (move 45ms,
-  rotate 30ms) so movement never rattles. Degrades to silence on any failure.
+  DSP in `synth_core.dart`. Its only caller today is `tool/generate_audio.dart`.
+- **Generating the assets** — `dart run tool/generate_audio.dart` renders every
+  `Sfx` (plus the music loop, §9) to `assets/audio/<name>.wav` and commits them.
+  Run it after editing `sound_config.dart` / `music_config.dart`, then commit
+  the regenerated files. `test/audio_assets_test.dart` byte-compares each
+  committed WAV against a fresh `synthesize(...)`/`synthesizeMusic()` call and
+  fails with a "run: dart run tool/generate_audio.dart" hint if they've drifted
+  (e.g. a config edit was made but the assets weren't regenerated).
+- **Playback** — `sound_service.dart` (singleton): each event gets an
+  `AudioPool` (audioplayers' own primitive for "extremely quick firing,
+  repetitive... sounds"), not a single `AudioPlayer`. A retriggered sound
+  starts on a fresh pooled player while the previous one keeps ringing out on
+  its own — throttling (move 45ms, rotate 30ms) still paces how often a sound
+  can fire, but nothing gets cut off mid-playback anymore. **Explicit fix:**
+  the original one-player-per-event design called `stop()` on a retrigger,
+  which — since `move`/`rotate`'s throttle window is shorter than the sound's
+  own duration — routinely chopped the previous play off at a non-zero
+  sample, an audible click on every fast move/rotate. Sources are preloaded
+  via `setSource(AssetSource(...))` (no runtime synthesis, no re-buffering —
+  see the resolved latency note in §9).
 - **Sound timing** (an explicit fix): the land "tock" and line-clear chime used
   to lag because lock detection waited for the next gravity tick and the clear
   sound played after the shrink animation. Now: landing is detected every frame
   (0.12s lock delay), the clear chime plays at the **start** of the clear, and
   the land tock plays **only when nothing clears** (a clearing drop plays just
   the chime, not both).
-- **Mute:** speaker button on the home screen; choice persisted in
-  shared_preferences (`sound_enabled`). Mutes both SFX and music.
+- **Settings:** a gear button (home screen) and a "Settings" button in the
+  pause menu open [lib/screens/settings_screen.dart](lib/screens/settings_screen.dart)
+  — separate enable toggle + volume slider for SFX (and music, §9). See §10 for
+  the persisted keys and the one-time migration from the old single mute toggle.
 
 Event → sound summary: tap = soft tick; move = subtle blip; rotate = light
 pluck; hardDrop = quick descending run; lock = low woody tock; lineClear1..4 =
@@ -291,7 +335,8 @@ gameOver = soft descending sigh.
 
 ## 9. Audio — background music
 
-A single **synthesized looping ambient track** — also no file.
+A single **looping ambient track**, defined in code and pre-rendered the same
+way as the SFX (§8) — `assets/audio/music.wav`, committed, no runtime synthesis.
 
 - **Definition** — [lib/audio/music_config.dart](lib/audio/music_config.dart):
   `masterVolume` (0.22, sits under the SFX), `bpm` (63), `loopBeats` (16 = four
@@ -301,25 +346,66 @@ A single **synthesized looping ambient track** — also no file.
   attack, release})`.
 - **Seamless loop** — `music_synth.dart` (`synthesizeMusic`): renders one loop;
   any note tail that runs past the loop end **wraps around and sums onto the
-  start**, so on repeat the tail flows into the next pass with no click/gap. The
-  buffer is normalized to ~0.9 peak; final loudness comes from the player volume.
+  start**, so on repeat the tail flows into the next pass with no click/gap.
+  `declickEdges` (`synth_core.dart`) additionally forces the very first/last
+  samples of the buffer toward zero, so the loop seam is guaranteed silent
+  regardless of what happens to land there. The buffer is normalized to ~0.9
+  peak; final loudness comes from the player volume. Only called from
+  `tool/generate_audio.dart` now.
 - **Playback** — a dedicated looping `AudioPlayer` (`ReleaseMode.loop`) in
-  `sound_service.dart`, started at app launch if enabled, plays app-wide (menus
-  + game), shares the mute toggle.
+  `sound_service.dart`, source preloaded via `AssetSource('audio/music.wav')`,
+  started at app launch if enabled, plays app-wide (menus + game). Volume =
+  `MusicConfig.masterVolume * musicVolume` where `musicVolume` is the user's
+  0–1 slider trim (§8's Settings screen); changes to the slider call
+  `AudioPlayer.setVolume` live while the loop keeps playing.
+- **Explicit fix:** `setReleaseMode(ReleaseMode.loop)` was originally set via a
+  `..` cascade, which fires the platform call but doesn't wait for it —
+  `setSource` could then run before looping was actually applied, risking a
+  hiccup right at the first loop boundary. It's now properly `await`ed first.
+- **Default volume:** music starts at `musicVolume` = **0.5** (`AudioSettings.
+  kDefaultMusicVolume`) — half the user-facing slider range — so it sits under
+  the SFX by default rather than competing with them; SFX default to `1.0`.
+  This is the slider's starting position (§8), layered on top of
+  `MusicConfig.masterVolume`, which is the separate mix-level tuning knob.
+- **Explicit fix — music not surviving navigation:** `SoundService.
+  ensureMusicPlaying()` re-asserts playback (calls `resume()`) whenever music
+  is supposed to be on but its player's `state` isn't `playing` — it never
+  interrupts an already-looping track, only recovers a stopped/paused one.
+  It's called from every [play] (any SFX firing is itself proof of life) and,
+  more importantly, from a `NavigatorObserver` in `main.dart` on every
+  `didPush`/`didPop`/`didReplace` — so music that got paused or dropped by a
+  platform quirk (audio focus changes, a backgrounded tab, etc.) picks back up
+  the moment the player moves to another screen, rather than staying silent
+  for the rest of the session.
 
 ### Important pivot: flutter_soloud → audioplayers
 
 The audio engine was first `flutter_soloud`. It compiled in Dart but its native
 C++ engine **failed to build via CMake/NDK** (NDK 27 / Clang 18) and broke the
 Android APK. It was replaced with **`audioplayers`** (pure platform channels, no
-native compile step), which plays the synthesized WAV bytes via `BytesSource`.
-All synthesis code was unchanged — only `sound_service.dart` swapped. **Do not
-reintroduce a native-compiled audio plugin without checking the Android build.**
+native compile step). **Do not reintroduce a native-compiled audio plugin
+without checking the Android build.**
 
-**Possible latency note:** `audioplayers` re-buffers a `BytesSource` on each
-`play()`, which can add small per-play latency. If on-device SFX feel slightly
-late, the planned fix is to preload low-latency file sources (write the WAVs to
-a temp/cache dir and use `DeviceFileSource` in low-latency mode). Not yet done.
+### Resolved: runtime synthesis → pre-rendered assets
+
+Audio was originally synthesized at runtime into in-memory buffers and played
+via `BytesSource`, which re-buffers on every `play()` — a documented source of
+per-play latency. It's now pre-rendered ahead of time by
+`tool/generate_audio.dart` into committed WAVs (`assets/audio/`), preloaded at
+`init()` via `AudioPlayer`/`AudioPool.create(source: AssetSource(...))` — no
+synthesis and no re-buffering happen at runtime anymore. The synth code
+(`tone_synth.dart`, `music_synth.dart`, `synth_core.dart`) is largely unchanged
+and stays the editable "source" of the sounds (it gained `declickEdges`, §8/§9);
+only its caller moved from `sound_service.dart` to the generator tool.
+
+### Resolved: retrigger clicks and a music loop-mode race
+
+Two follow-up playback bugs, fixed after the pivot above: (1) SFX used one
+`AudioPlayer` per event and retriggered it with `stop()` — see §8's pool
+explanation for why that clicked. (2) the music player's `setReleaseMode` call
+wasn't awaited before `setSource` — see §9. Neither was a synthesis problem;
+`declickEdges` was added as well, as cheap insurance against the synth's own
+envelopes leaving a non-silent sample at a clip's edges.
 
 ---
 
@@ -331,7 +417,15 @@ cookies, not cloud, no cross-device sync).
 
 - `unlocked_level` (int, default 1) — highest stage the player may enter.
 - `high_score_infinite` (int) — infinite-mode best.
-- `sound_enabled` (bool) — audio mute preference.
+- `music_enabled` / `sfx_enabled` (bool, default true) — per-channel audio toggle.
+- `music_volume` (double 0–1, default **0.5**) / `sfx_volume` (double 0–1,
+  default 1.0) — per-channel volume trim, applied on top of
+  `MusicConfig.masterVolume` / `SoundConfig.masterVolume`.
+
+`music_enabled`/`sfx_enabled` replace the old single `sound_enabled` toggle.
+[lib/audio/audio_settings.dart](lib/audio/audio_settings.dart) migrates it
+once: if neither new key is present yet but `sound_enabled` is, both channels
+seed from its value and the legacy key is deleted so it can't reapply later.
 
 Uninstalling the app (or clearing browser data on web) wipes it. Cross-device /
 reinstall-safe sync would require an account/cloud backend (not implemented).
@@ -342,6 +436,8 @@ reinstall-safe sync would require an account/cloud backend (not implemented).
 
 ```sh
 flutter pub get
+dart run tool/generate_audio.dart   # regenerate assets/audio/*.wav after an
+                                    # audio config edit; commit the result
 flutter run                 # on a connected device or simulator
 flutter test                # all unit/widget tests
 flutter analyze             # lints
@@ -401,6 +497,4 @@ Work is committed on the `build-chill-tetris` branch (default branch: `main`).
 
 - Cloud/account save for cross-device progress (Firebase / Game Center / Google
   Play Games) — current persistence is local only.
-- Low-latency file-based SFX playback (see §9) if on-device latency is an issue.
-- Separate music vs. SFX volume/mute controls (currently one toggle).
-- More palettes / a palette picker; more stages; a settings screen.
+- More palettes / a palette picker; more stages.
