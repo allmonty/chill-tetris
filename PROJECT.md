@@ -130,7 +130,7 @@ lib/
                                 plays with throttling, mute toggle, loops music. Degrades
                                 to silence if audio can't init.
 assets/
-  levels/levels.json            15 stage definitions.
+  levels/levels.json            50 stage definitions + unlockedAtStart.
 test/
   board_test.dart               Collision, lock, line clear, top-out.
   tetromino_test.dart           Rotation / shapes.
@@ -197,19 +197,27 @@ terracotta because slate blue disappeared against the dark board.
 
 ## 6. Level configuration
 
-Stages live in [assets/levels/levels.json](assets/levels/levels.json) — a list
-of maps, 15 entries:
+Stages live in [assets/levels/levels.json](assets/levels/levels.json) — an
+object with catalog-wide settings and 50 level entries:
 
 ```json
 {
-  "level": 1,
-  "targetScore": 300,
-  "initialPieces": [
-    { "x": 0, "y": 19, "color": 0 }
+  "unlockedAtStart": 1,
+  "levels": [
+    {
+      "level": 1,
+      "targetScore": 300,
+      "initialPieces": [
+        { "x": 0, "y": 19, "color": 0 }
+      ]
+    }
   ]
 }
 ```
 
+- `unlockedAtStart` — how many levels are playable before any progress is
+  made (clamped to `1..levels.length`; a legacy bare-list file parses with
+  a value of 1).
 - `level` — 1-based level number.
 - `targetScore` — points needed to win.
 - `initialPieces` — pre-placed cells (JSON key is `initialPieces`; parsed into

@@ -20,7 +20,7 @@ class LevelSelectScreen extends StatefulWidget {
 }
 
 class _LevelSelectScreenState extends State<LevelSelectScreen> {
-  List<LevelConfig>? _levels;
+  LevelCatalog? _catalog;
   ProgressService? _progress;
 
   @override
@@ -30,11 +30,11 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
   }
 
   Future<void> _load() async {
-    final levels = await LevelConfig.loadAll();
+    final catalog = await LevelCatalog.load();
     final progress = await ProgressService.load();
     if (!mounted) return;
     setState(() {
-      _levels = levels;
+      _catalog = catalog;
       _progress = progress;
     });
   }
@@ -52,7 +52,7 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
   @override
   Widget build(BuildContext context) {
     final p = Palette.current;
-    final levels = _levels;
+    final catalog = _catalog;
     final progress = _progress;
     return Scaffold(
       backgroundColor: p.background,
@@ -62,7 +62,7 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
         elevation: 0,
         title: const Text('Select Level'),
       ),
-      body: (levels == null || progress == null)
+      body: (catalog == null || progress == null)
           ? Center(child: CircularProgressIndicator(color: p.accent))
           : GridView.builder(
               padding: const EdgeInsets.all(20),
@@ -72,10 +72,11 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
                 crossAxisSpacing: 14,
                 childAspectRatio: 0.85,
               ),
-              itemCount: levels.length,
+              itemCount: catalog.levels.length,
               itemBuilder: (_, i) {
-                final level = levels[i];
-                final unlocked = progress.isLevelUnlocked(level.level);
+                final level = catalog.levels[i];
+                final unlocked = level.level <= catalog.unlockedAtStart ||
+                    progress.isLevelUnlocked(level.level);
                 return _LevelTile(
                   level: level.level,
                   unlocked: unlocked,

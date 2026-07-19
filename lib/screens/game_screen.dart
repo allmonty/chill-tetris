@@ -49,7 +49,7 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   Future<void> _resolveNextLevel(int current) async {
-    final levels = await LevelConfig.loadAll();
+    final levels = (await LevelCatalog.load()).levels;
     if (!mounted) return;
     final idx = levels.indexWhere((l) => l.level == current);
     setState(() {
