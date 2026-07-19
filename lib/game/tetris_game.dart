@@ -47,6 +47,12 @@ class TetrisGame extends FlameGame with TapCallbacks, DragCallbacks {
   static const double _infiniteSpeedFactor = 0.85; // per speed level
   static const int _linesPerSpeedLevel = 10;
 
+  /// How long a piece rests on the stack before it locks. Short and fixed, so
+  /// landing feels immediate at any fall speed while still allowing a last
+  /// nudge. This is checked every frame, not on the gravity clock, so the land
+  /// sound never waits for the next gravity tick.
+  static const double _lockDelaySeconds = 0.12;
+
   // --- State --------------------------------------------------------------
   final Board board = Board();
   final SevenBag _bag = SevenBag();
@@ -67,6 +73,7 @@ class TetrisGame extends FlameGame with TapCallbacks, DragCallbacks {
 
   double _gravityInterval = _infiniteStartInterval;
   double _fallAccum = 0;
+  double _restElapsed = 0; // time the piece has been unable to descend
 
   // Drag accumulators (reset per drag).
   double _accumDx = 0;
@@ -132,10 +139,27 @@ class TetrisGame extends FlameGame with TapCallbacks, DragCallbacks {
       return;
     }
     if (!_active) return;
-    _fallAccum += dt;
-    if (_fallAccum >= _gravityInterval) {
-      _fallAccum = 0;
-      _stepDown();
+    _updateFallAndLock(dt);
+  }
+
+  void _updateFallAndLock(double dt) {
+    final piece = active!;
+    if (board.canPlaceAt(piece, col: piece.col, row: piece.row + 1)) {
+      // Still room below: reset any pending lock and fall on the gravity clock.
+      _restElapsed = 0;
+      _fallAccum += dt;
+      if (_fallAccum >= _gravityInterval) {
+        _fallAccum = 0;
+        piece.row += 1;
+      }
+    } else {
+      // Resting on the stack: lock after a short fixed delay, measured every
+      // frame so the land/clear sound fires promptly instead of waiting for the
+      // next gravity tick.
+      _restElapsed += dt;
+      if (_restElapsed >= _lockDelaySeconds) {
+        _lockActive();
+      }
     }
   }
 
@@ -153,29 +177,24 @@ class TetrisGame extends FlameGame with TapCallbacks, DragCallbacks {
     }
   }
 
-  void _stepDown() {
-    final piece = active!;
-    if (board.canPlaceAt(piece, col: piece.col, row: piece.row + 1)) {
-      piece.row += 1;
-    } else {
-      _lockActive();
-    }
-  }
-
   void _lockActive() {
     final locked = active!.cells.map((c) => (c.dx, c.dy)).toList();
     board.lock(active!);
     active = null;
+    _restElapsed = 0;
     animator.triggerLockBounce(locked);
-    SoundService.instance.play(Sfx.lock);
 
     final full = board.fullRows();
     if (full.isEmpty) {
+      // Nothing clears: just the soft landing "tock".
+      SoundService.instance.play(Sfx.lock);
       _spawn();
       return;
     }
-    // Enter the clearing phase; rows stay on the board and shrink away while
-    // gravity is paused, then _finishClear removes them and settles the rest.
+    // Lines clear: play the chime up front (when the shrink starts), not after
+    // the animation. Enter the clearing phase; rows stay on the board and
+    // shrink away while gravity is paused, then _finishClear removes them.
+    _playLineClear(full.length);
     clearingRows = full;
     clearElapsed = 0;
     phase = GamePhase.clearing;
@@ -200,7 +219,6 @@ class TetrisGame extends FlameGame with TapCallbacks, DragCallbacks {
     clearingRows = const [];
     phase = GamePhase.playing;
 
-    _playLineClear(n);
     linesCleared += n;
     _addScore(lineClearScore(n));
     _updateSpeed();
@@ -227,6 +245,7 @@ class TetrisGame extends FlameGame with TapCallbacks, DragCallbacks {
     }
     active = piece;
     _fallAccum = 0;
+    _restElapsed = 0;
     _spawnElapsed = 0;
   }
 
