@@ -4,6 +4,8 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'music_synth.dart';
+import 'music_config.dart';
 import 'sound_config.dart';
 import 'tone_synth.dart';
 
@@ -28,8 +30,13 @@ class SoundService {
   final Map<Sfx, Uint8List> _bytes = {};
   final Map<Sfx, DateTime> _lastPlayed = {};
 
-  /// Loads the saved on/off preference and synthesizes every sound into a
-  /// ready-to-play buffer. Safe to call once at startup; never throws.
+  AudioPlayer? _musicPlayer;
+  Uint8List? _musicBytes;
+  bool _musicStarted = false;
+
+  /// Loads the saved on/off preference, synthesizes every sound and the music
+  /// loop, and starts the music if enabled. Safe to call once at startup; never
+  /// throws.
   Future<void> init() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -44,12 +51,38 @@ class SoundService {
         _players[entry.key] = AudioPlayer()
           ..setReleaseMode(ReleaseMode.stop);
       }
+      _musicBytes = synthesizeMusic();
+      _musicPlayer = AudioPlayer()..setReleaseMode(ReleaseMode.loop);
       _ready = true;
     } catch (e) {
       _ready = false;
       debugPrint('SoundService: audio disabled ($e)');
     }
+
+    if (enabled.value) _startMusic();
   }
+
+  /// Starts (or resumes) the looping background track.
+  void _startMusic() {
+    final player = _musicPlayer;
+    final bytes = _musicBytes;
+    if (player == null || bytes == null) return;
+    unawaited(() async {
+      try {
+        if (_musicStarted) {
+          await player.resume();
+        } else {
+          _musicStarted = true;
+          await player.play(BytesSource(bytes),
+              volume: MusicConfig.masterVolume);
+        }
+      } catch (_) {
+        // Music is optional ambience — ignore failures.
+      }
+    }());
+  }
+
+  void _pauseMusic() => unawaited(_musicPlayer?.pause().catchError((Object _) {}));
 
   /// Plays [sfx] if audio is ready and enabled. Rapid repeats of the same sound
   /// are throttled so movement never turns into a machine-gun rattle.
@@ -85,6 +118,11 @@ class SoundService {
 
   Future<void> setEnabled(bool value) async {
     enabled.value = value;
+    if (value) {
+      _startMusic();
+    } else {
+      _pauseMusic();
+    }
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_kEnabledKey, value);

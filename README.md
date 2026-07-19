@@ -86,6 +86,25 @@ Sfx.rotate: SoundSpec(degrees: [4], noteDuration: 0.08, volume: 0.24),
 Sound can be muted from the speaker button on the home screen (the choice is
 saved).
 
+## Background music
+
+The ambient loop is synthesized the same way — no audio file. It's defined as
+data in [lib/audio/music_config.dart](lib/audio/music_config.dart): a tempo, a
+loop length, and a flat list of notes (three loose voices — bass, pad, melody),
+all in the pentatonic scale so it stays consonant.
+
+```dart
+MusicNote(1.0, 1.4, 4),  // start beat 1.0, lasts 1.4 beats, scale degree 4
+```
+
+[lib/audio/music_synth.dart](lib/audio/music_synth.dart) renders the loop to a
+single WAV; any note tail that runs past the loop end wraps back to the start,
+so it repeats with no audible seam. The core DSP (pitch, waveforms, envelope,
+WAV encoding) is shared with the effects in
+[lib/audio/synth_core.dart](lib/audio/synth_core.dart). Music loudness and tempo
+are `MusicConfig.masterVolume` and `MusicConfig.bpm`; it shares the home-screen
+mute toggle with the effects.
+
 ## Running
 
 ```sh
