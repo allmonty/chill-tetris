@@ -1,0 +1,16 @@
+# Stamps assets/icon/*.png (rendered by tool/generate_icon.dart) onto the
+# Android, iOS and web launcher icons:
+#
+#   dart run flutter_launcher_icons
+flutter_launcher_icons:
+  image_path: assets/icon/app_icon.png
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  adaptive_icon_background: "#4E4243" # board walnut, matches the icon bg
+  adaptive_icon_foreground: assets/icon/app_icon_foreground.png
+  web:
+    generate: true
+    image_path: assets/icon/app_icon.png
+    background_color: "#F1EFE9" # app background (splash while loading)
+    theme_color: "#4E4243"

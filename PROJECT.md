@@ -41,7 +41,9 @@ Two modes, chosen from the home screen:
   - `flame: ^1.37.0` — game loop, rendering, gesture input.
   - `audioplayers: ^6.7.1` — audio playback (see the pivot note in §9).
   - `shared_preferences: ^2.5.5` — progress + settings persistence.
-- Dev: `flutter_test`, `flutter_lints`.
+- Dev: `flutter_test`, `flutter_lints`, `image` (renders the app icon in
+  `tool/generate_icon.dart`), `flutter_launcher_icons` (stamps it onto the
+  platforms).
 
 ### Key decisions (and why)
 
@@ -147,10 +149,19 @@ tool/
                                 Sfx + the music loop via tone_synth/music_synth and
                                 writes assets/audio/*.wav. Run after editing
                                 sound_config.dart / music_config.dart, then commit.
+  generate_icon.dart            CLI (`dart run tool/generate_icon.dart`): renders the
+                                app icon (a 4x4 square built from tetromino pieces,
+                                drawn like the game board on the walnut background) to
+                                assets/icon/*.png. Re-stamp the platform icons after
+                                with `dart run flutter_launcher_icons` (config in
+                                flutter_launcher_icons.yaml).
 assets/
   levels/levels.json            50 stage definitions + unlockedAtStart.
   audio/*.wav                   Committed, pre-rendered SFX + music.wav (generated,
                                 never hand-edited — see tool/generate_audio.dart).
+  icon/app_icon.png             Committed, pre-rendered app icon (full-bleed base) and
+  icon/app_icon_foreground.png  the transparent Android adaptive foreground — both
+                                generated, never hand-edited (tool/generate_icon.dart).
 test/
   board_test.dart               Collision, lock, line clear, top-out.
   tetromino_test.dart           Rotation / shapes.
@@ -213,6 +224,15 @@ Current palette = **mid-century modern** (`GamePalette.midCenturyModern`):
 | danger | `#B06757` | terracotta |
 | lockedLevel | `#CDCDC9` | locked level tiles |
 | pieceColors[0..6] | `#8F9779` sage, `#DDB058` mustard, `#E6D394` pale gold, `#9BB0BC` dusty blue, `#D2A799` clay pink, `#CED5B6` pale sage, `#B06757` terracotta | one per tetromino |
+
+**App icon:** a 4×4 square assembled from four tetromino pieces (two Z, two L
+in mustard / sage / dusty blue / terracotta), drawn exactly like the in-game
+board — rounded cells with a small gap on the walnut background. It's rendered
+by [tool/generate_icon.dart](tool/generate_icon.dart) into committed PNGs
+(`assets/icon/`), then `dart run flutter_launcher_icons` (config:
+`flutter_launcher_icons.yaml`) stamps Android (including adaptive), iOS, and
+web (favicon + PWA) icons. `web/manifest.json` / `web/index.html` carry the
+matching name ("Chill Tetris") and palette colors.
 
 **History note:** the board was originally light grey (`#CDCDC9`), which gave
 pieces near-invisible contrast (WCAG ~1.05–1.9). It was changed to dark walnut
@@ -443,6 +463,9 @@ reinstall-safe sync would require an account/cloud backend (not implemented).
 flutter pub get
 dart run tool/generate_audio.dart   # regenerate assets/audio/*.wav after an
                                     # audio config edit; commit the result
+dart run tool/generate_icon.dart    # regenerate assets/icon/*.png after an
+dart run flutter_launcher_icons     # icon edit, then re-stamp the platform
+                                    # icons; commit the result
 flutter run                 # on a connected device or simulator
 flutter test                # all unit/widget tests
 flutter analyze             # lints

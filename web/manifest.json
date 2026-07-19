@@ -1,11 +1,11 @@
 {
-    "name": "chill_tetris",
-    "short_name": "chill_tetris",
+    "name": "Chill Tetris",
+    "short_name": "Chill Tetris",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#F1EFE9",
+    "theme_color": "#4E4243",
+    "description": "A calm, relaxing take on Tetris.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
