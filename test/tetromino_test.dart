@@ -55,5 +55,28 @@ void main() {
         expect(a.next(), b.next());
       }
     });
+
+    test('peek returns the type next() will deal, without consuming it', () {
+      final bag = SevenBag(7);
+      final peeked = bag.peek();
+      expect(bag.peek(), peeked, reason: 'peek must not consume');
+      expect(bag.next(), peeked, reason: 'next must match the prior peek');
+    });
+
+    test('peek does not disturb the fair 7-deal', () {
+      final bag = SevenBag(7);
+      final dealt = List.generate(7, (_) {
+        bag.peek();
+        return bag.next();
+      });
+      expect(dealt.toSet().length, 7);
+    });
+
+    test('peek refills across a bag boundary', () {
+      final bag = SevenBag(3);
+      List.generate(7, (_) => bag.next()); // exhaust the first bag
+      final peeked = bag.peek(); // forces a refill
+      expect(bag.next(), peeked);
+    });
   });
 }

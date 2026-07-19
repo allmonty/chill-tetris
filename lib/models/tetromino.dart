@@ -109,10 +109,20 @@ class SevenBag {
   final List<TetrominoType> _bag = [];
 
   TetrominoType next() {
+    _refillIfEmpty();
+    return _bag.removeLast();
+  }
+
+  /// The type [next] will return, without consuming it (for the preview).
+  TetrominoType peek() {
+    _refillIfEmpty();
+    return _bag.last;
+  }
+
+  void _refillIfEmpty() {
     if (_bag.isEmpty) {
       _bag.addAll(TetrominoType.values);
       _bag.shuffle(_rng);
     }
-    return _bag.removeLast();
   }
 }

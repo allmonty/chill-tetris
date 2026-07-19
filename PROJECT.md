@@ -29,6 +29,12 @@ Two modes, chosen from the home screen:
 - **Flick down** — hard drop.
 - **Tap** — rotate clockwise (with simple wall kicks).
 
+Drag input has a **wobble tolerance** so pulling a piece straight down never
+shifts it sideways by accident: soft-dropping a row zeroes the horizontal drift,
+and once a gesture has dropped, a column shift needs 1.5 cells of sideways
+travel instead of one (`_softDropDxFactor`). The upcoming piece is previewed in
+the top bar.
+
 ---
 
 ## 2. Tech stack & environment
@@ -122,9 +128,10 @@ lib/
     settings_screen.dart        Music/SFX sections: enable Switch + volume Slider each,
                                 reading/writing SoundService's notifiers.
   widgets/
-    game_overlays.dart          GameTopBar (score/goal or score/speed, back, pause),
-                                and the pause (Resume/Settings/Quit) / game-over /
-                                level-clear modal cards.
+    game_overlays.dart          GameTopBar (back, score/goal or score/speed,
+                                next-piece preview chip, pause), and the pause
+                                (Resume/Settings/Quit) / game-over / level-clear
+                                modal cards.
   services/
     progress_service.dart       shared_preferences: unlocked level + infinite high score.
   audio/
@@ -184,16 +191,22 @@ test/
 - **Board:** 10 columns × 20 rows. Cells hold an `int?` = palette `pieceColors`
   index (null = empty).
 - **Spawning:** 7-bag randomizer (`SevenBag`) for fair piece distribution. Each
-  tetromino type maps to a fixed color index (I→0 … L→6).
+  tetromino type maps to a fixed color index (I→0 … L→6). `SevenBag.peek()`
+  reveals the next type (without consuming it) for the top-bar preview; the game
+  publishes it via the `nextPiece` `ValueNotifier`, updated on every spawn.
 - **Scoring:** `lineClearScore` — 100 / 300 / 500 / 800 for 1 / 2 / 3 / 4 lines.
 - **Speed graduation (infinite):** interval starts at **0.8s** per cell, ×0.85
   every **10** lines, floored at **0.12s** (full speed). Constants:
   `_infiniteStartInterval`, `_infiniteSpeedFactor`, `_linesPerSpeedLevel`,
   `_infiniteMinInterval` in `tetris_game.dart`.
-- **Lock delay:** a landed piece locks after a short **0.12s** delay
-  (`_lockDelaySeconds`), checked **every frame** (not on the gravity tick). This
-  is important: it makes landing feel immediate at any fall speed and lets the
-  land/clear sounds fire promptly. A brief window still allows a last nudge.
+- **Lock delay:** a landed piece locks after a **0.40s** delay
+  (`_lockDelaySeconds`), checked **every frame** (not on the gravity tick), so it
+  behaves the same at any fall speed. Every successful move/rotation while the
+  piece is resting **restarts** the delay (`_bumpLockDelay`), giving time to
+  slide a piece under an overhang at the last moment — capped at
+  `_maxLockResets` (8) restarts per landing so it can't hover forever. The reset
+  budget clears when the piece actually descends a row or a new one spawns. Hard
+  drop still locks immediately. The land tock plays exactly at lock.
 - **Line-clear phases:** on lock, full rows enter a `GamePhase.clearing` state;
   cells shrink/fade with a left-to-right stagger while gravity pauses, then
   `_finishClear` removes them and eases the rows above down into place.
@@ -294,7 +307,10 @@ applies them at render time, keeping the pure `Board` model animation-free.
 
 The top bar (`GameTopBar`) is a solid bar **above** the board (in a `Column`),
 not a floating overlay, so it never overlaps the playfield; the board area is
-wrapped in `SafeArea(top: false)` to stay clear of the Android nav bar.
+wrapped in `SafeArea(top: false)` to stay clear of the Android nav bar. It also
+carries the **next-piece preview** — a small chip (`_NextPiecePainter`) drawing
+the upcoming piece's rotation-0 cells in its palette color, centered on the
+piece's bounding box, rebuilt from the game's `nextPiece` notifier.
 
 ---
 

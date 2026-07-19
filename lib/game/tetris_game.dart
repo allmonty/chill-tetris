@@ -3,6 +3,7 @@ import 'dart:ui' show Color;
 
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
+import 'package:flutter/foundation.dart';
 
 import '../audio/sound_config.dart';
 import '../audio/sound_service.dart';
@@ -47,17 +48,31 @@ class TetrisGame extends FlameGame with TapCallbacks, DragCallbacks {
   static const double _infiniteSpeedFactor = 0.85; // per speed level
   static const int _linesPerSpeedLevel = 10;
 
-  /// How long a piece rests on the stack before it locks. Short and fixed, so
-  /// landing feels immediate at any fall speed while still allowing a last
-  /// nudge. This is checked every frame, not on the gravity clock, so the land
-  /// sound never waits for the next gravity tick.
-  static const double _lockDelaySeconds = 0.12;
+  /// How long a piece rests on the stack before it locks. Long enough to
+  /// slide a piece under an overhang at the last moment; checked every frame,
+  /// not on the gravity clock, so it behaves the same at any fall speed.
+  static const double _lockDelaySeconds = 0.40;
+
+  /// Each successful move/rotate while resting restarts the lock delay
+  /// ("move reset"), up to this many times per landing — maneuvering is easy,
+  /// but a piece can't hover forever.
+  static const int _maxLockResets = 8;
+
+  /// Once a drag has soft-dropped, a column shift needs this many cells of
+  /// horizontal travel (instead of 1) — finger wobble during a downward pull
+  /// can't push the piece off the aimed column, a deliberate slide still can.
+  static const double _softDropDxFactor = 1.5;
 
   // --- State --------------------------------------------------------------
   final Board board = Board();
   final SevenBag _bag = SevenBag();
   final CellAnimator animator = CellAnimator();
   late BoardComponent boardComponent;
+
+  /// The type that will spawn after the current piece locks (for the preview
+  /// in the top bar). Null only before the first spawn.
+  final ValueNotifier<TetrominoType?> nextPiece =
+      ValueNotifier<TetrominoType?>(null);
 
   Piece? active;
   int score = 0;
@@ -74,10 +89,12 @@ class TetrisGame extends FlameGame with TapCallbacks, DragCallbacks {
   double _gravityInterval = _infiniteStartInterval;
   double _fallAccum = 0;
   double _restElapsed = 0; // time the piece has been unable to descend
+  int _lockResets = 0; // lock-delay restarts spent on the current landing
 
   // Drag accumulators (reset per drag).
   double _accumDx = 0;
   double _accumDy = 0;
+  bool _dragDropped = false; // current gesture has soft-dropped
 
   int get targetScore =>
       mode is StageMode ? (mode as StageMode).level.targetScore : 0;
@@ -147,6 +164,7 @@ class TetrisGame extends FlameGame with TapCallbacks, DragCallbacks {
     if (board.canPlaceAt(piece, col: piece.col, row: piece.row + 1)) {
       // Still room below: reset any pending lock and fall on the gravity clock.
       _restElapsed = 0;
+      _lockResets = 0;
       _fallAccum += dt;
       if (_fallAccum >= _gravityInterval) {
         _fallAccum = 0;
@@ -246,7 +264,9 @@ class TetrisGame extends FlameGame with TapCallbacks, DragCallbacks {
     active = piece;
     _fallAccum = 0;
     _restElapsed = 0;
+    _lockResets = 0;
     _spawnElapsed = 0;
+    nextPiece.value = _bag.peek();
   }
 
   void _addScore(int delta) {
@@ -276,12 +296,27 @@ class TetrisGame extends FlameGame with TapCallbacks, DragCallbacks {
   }
 
   // --- Player actions -----------------------------------------------------
+  /// Restarts the lock delay after a move/rotation that happened while the
+  /// piece was resting on the stack, so the player can keep maneuvering — but
+  /// only up to [_maxLockResets] times per landing, so a piece can't hover
+  /// indefinitely.
+  void _bumpLockDelay() {
+    final p = active;
+    if (p == null) return;
+    final resting = !board.canPlaceAt(p, col: p.col, row: p.row + 1);
+    if (resting && _lockResets < _maxLockResets) {
+      _restElapsed = 0;
+      _lockResets++;
+    }
+  }
+
   void _tryMove(int dCol) {
     if (!_active) return;
     final p = active!;
     if (board.canPlaceAt(p, col: p.col + dCol, row: p.row)) {
       p.col += dCol;
       SoundService.instance.play(Sfx.move);
+      _bumpLockDelay();
     }
   }
 
@@ -294,6 +329,8 @@ class TetrisGame extends FlameGame with TapCallbacks, DragCallbacks {
     if (board.canPlaceAt(p, col: p.col, row: p.row + 1)) {
       p.row += 1;
       _fallAccum = 0;
+      _restElapsed = 0;
+      _lockResets = 0;
     }
   }
 
@@ -317,6 +354,7 @@ class TetrisGame extends FlameGame with TapCallbacks, DragCallbacks {
         p.col += kick;
         p.rotation = next;
         SoundService.instance.play(Sfx.rotate);
+        _bumpLockDelay();
         return;
       }
     }
@@ -347,6 +385,7 @@ class TetrisGame extends FlameGame with TapCallbacks, DragCallbacks {
     super.onDragStart(event);
     _accumDx = 0;
     _accumDy = 0;
+    _dragDropped = false;
   }
 
   @override
@@ -355,17 +394,26 @@ class TetrisGame extends FlameGame with TapCallbacks, DragCallbacks {
     if (cs <= 0) return;
     _accumDx += event.localDelta.x;
     _accumDy += event.localDelta.y;
-    while (_accumDx >= cs) {
+
+    // Once the gesture has started pulling the piece down, a sideways shift
+    // needs extra travel, so finger wobble during the pull can't nudge the
+    // piece off the aimed column.
+    final dxStep = _dragDropped ? cs * _softDropDxFactor : cs;
+    while (_accumDx >= dxStep) {
       moveRight();
-      _accumDx -= cs;
+      _accumDx -= dxStep;
+      _accumDy = 0; // a real sideways move discards drift on the other axis
     }
-    while (_accumDx <= -cs) {
+    while (_accumDx <= -dxStep) {
       moveLeft();
-      _accumDx += cs;
+      _accumDx += dxStep;
+      _accumDy = 0;
     }
     while (_accumDy >= cs) {
       softDrop();
       _accumDy -= cs;
+      _accumDx = 0; // wobble collected while pulling down can't build a shift
+      _dragDropped = true;
     }
   }
 
@@ -377,5 +425,11 @@ class TetrisGame extends FlameGame with TapCallbacks, DragCallbacks {
     if (v.y > 1400 && v.y.abs() > v.x.abs() * 1.5) {
       hardDrop();
     }
+  }
+
+  @override
+  void onRemove() {
+    nextPiece.dispose();
+    super.onRemove();
   }
 }
