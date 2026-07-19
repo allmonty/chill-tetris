@@ -63,6 +63,22 @@ double _tanh(double x) {
   return (e2x - 1) / (e2x + 1);
 }
 
+/// Forces the very first and last [fadeSamples] samples of [buffer] toward
+/// zero. A [pluckEnvelope]'s release ramp only ever gets *close* to zero (it's
+/// an asymptotic decay plus a linear tail), so a clip's last sample can be a
+/// small but non-zero value; encoding stops right there with no further
+/// ramp-down, which is an audible click. This guarantees a silent start and
+/// end regardless — for a one-shot sound that's a true silence pad, and for a
+/// looping buffer it also guarantees the loop seam itself is silent.
+void declickEdges(Float64List buffer, {int fadeSamples = 32}) {
+  final n = math.min(fadeSamples, buffer.length ~/ 2);
+  for (var i = 0; i < n; i++) {
+    final fade = i / n;
+    buffer[i] *= fade;
+    buffer[buffer.length - 1 - i] *= fade;
+  }
+}
+
 /// Wraps normalized [-1, 1] samples in a 16-bit mono PCM WAV container.
 Uint8List encodeWav(Float64List samples, int sampleRate) {
   const bitsPerSample = 16;

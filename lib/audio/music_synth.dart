@@ -48,5 +48,10 @@ Uint8List synthesizeMusic() {
     }
   }
 
+  // Guarantees the loop seam itself (buffer[0] and buffer[total - 1]) is
+  // silent, on top of the wrap-around already keeping each note's own
+  // waveform continuous across it.
+  declickEdges(buffer);
+
   return encodeWav(buffer, sr);
 }

@@ -6,6 +6,7 @@ import 'game/game_mode.dart';
 import 'screens/game_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/level_select_screen.dart';
+import 'screens/settings_screen.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {
@@ -19,26 +20,86 @@ Future<void> main() async {
   runApp(const ChillTetrisApp());
 }
 
-class ChillTetrisApp extends StatelessWidget {
+class ChillTetrisApp extends StatefulWidget {
   const ChillTetrisApp({super.key});
 
   @override
+  State<ChillTetrisApp> createState() => _ChillTetrisAppState();
+}
+
+class _ChillTetrisAppState extends State<ChillTetrisApp>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  /// Resume music when the app returns to the foreground — the OS pauses our
+  /// audio while backgrounded and won't restart it on its own.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      SoundService.instance.ensureMusicPlaying();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Chill Tetris',
-      debugShowCheckedModeBanner: false,
-      theme: buildAppTheme(),
-      home: const HomeScreen(),
-      routes: {
-        LevelSelectScreen.route: (_) => const LevelSelectScreen(),
-      },
-      onGenerateRoute: (settings) {
-        if (settings.name == GameScreen.route) {
-          final mode = settings.arguments as GameMode? ?? const InfiniteMode();
-          return MaterialPageRoute(builder: (_) => GameScreen(mode: mode));
-        }
-        return null;
-      },
+    // A top-level pointer listener re-asserts music on any tap, anywhere. This
+    // is what makes playback survive across screens: browsers (and some
+    // platforms) refuse to start audio until a user gesture, so the initial
+    // start in `init()` can be silently dropped — the first interaction on any
+    // screen then kicks it back on. Passthrough (HitTestBehavior.deferToChild)
+    // so it never eats taps meant for the UI beneath it.
+    return Listener(
+      behavior: HitTestBehavior.deferToChild,
+      onPointerDown: (_) => SoundService.instance.ensureMusicPlaying(),
+      child: MaterialApp(
+        title: 'Chill Tetris',
+        debugShowCheckedModeBanner: false,
+        theme: buildAppTheme(),
+        home: const HomeScreen(),
+        navigatorObservers: [_MusicKeepAliveObserver()],
+        routes: {
+          LevelSelectScreen.route: (_) => const LevelSelectScreen(),
+          SettingsScreen.route: (_) => const SettingsScreen(),
+        },
+        onGenerateRoute: (settings) {
+          if (settings.name == GameScreen.route) {
+            final mode =
+                settings.arguments as GameMode? ?? const InfiniteMode();
+            return MaterialPageRoute(builder: (_) => GameScreen(mode: mode));
+          }
+          return null;
+        },
+      ),
     );
   }
+}
+
+/// Re-asserts background music on every page transition — see
+/// [SoundService.ensureMusicPlaying] for why this is needed rather than
+/// assumed: it's a cheap self-heal, not something navigation should ever have
+/// to do on its own.
+class _MusicKeepAliveObserver extends NavigatorObserver {
+  void _ensure() => SoundService.instance.ensureMusicPlaying();
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) =>
+      _ensure();
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) =>
+      _ensure();
+
+  @override
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) =>
+      _ensure();
 }

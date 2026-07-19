@@ -65,18 +65,45 @@ class LevelConfig {
       initialCells: valid,
     );
   }
+}
 
-  /// Parses the full list of levels from a JSON string.
-  static List<LevelConfig> listFromJsonString(String source) {
-    final data = jsonDecode(source) as List<dynamic>;
-    return data
+/// The full set of stages plus catalog-wide settings from levels.json.
+@immutable
+class LevelCatalog {
+  const LevelCatalog({required this.unlockedAtStart, required this.levels});
+
+  /// How many levels are playable before any progress is made. Clamped to
+  /// 1..levels.length so a bad config can't lock level 1 or unlock nothing.
+  final int unlockedAtStart;
+
+  final List<LevelConfig> levels;
+
+  factory LevelCatalog.fromJsonString(String source) {
+    final data = jsonDecode(source);
+
+    // Legacy format: a bare list of levels, one unlocked at start.
+    final (rawLevels, rawUnlocked) = switch (data) {
+      final List<dynamic> list => (list, 1),
+      final Map<String, dynamic> map => (
+          map['levels'] as List<dynamic>? ?? const <dynamic>[],
+          map['unlockedAtStart'] as int? ?? 1,
+        ),
+      _ => throw FormatException('levels.json: expected a list or map'),
+    };
+
+    final levels = rawLevels
         .map((e) => LevelConfig.fromJson(e as Map<String, dynamic>))
         .toList();
+    return LevelCatalog(
+      unlockedAtStart:
+          levels.isEmpty ? 1 : rawUnlocked.clamp(1, levels.length),
+      levels: levels,
+    );
   }
 
   /// Loads and parses the bundled levels asset.
-  static Future<List<LevelConfig>> loadAll() async {
+  static Future<LevelCatalog> load() async {
     final source = await rootBundle.loadString('assets/levels/levels.json');
-    return listFromJsonString(source);
+    return LevelCatalog.fromJsonString(source);
   }
 }

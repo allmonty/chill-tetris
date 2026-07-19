@@ -1,13 +1,16 @@
 /// The "sound palette" — every sound effect defined as data you can tweak.
 ///
-/// Sounds are synthesized at runtime from these specs (see `tone_synth.dart`),
-/// so there are no audio files to manage. To keep the game relaxing, every
-/// note is a *degree of a pentatonic scale*: pentatonic notes never clash, so
-/// you can freely retune a sound and it will still sound pleasant. Prefer soft
-/// waveforms, short durations, and low volumes.
+/// Sounds are rendered from these specs by `tool/generate_audio.dart` (via
+/// `tone_synth.dart`) into committed WAV assets — nothing is synthesized at
+/// runtime. After editing a spec here, run
+/// `dart run tool/generate_audio.dart` and commit the regenerated files;
+/// `test/audio_assets_test.dart` fails if you forget. To keep the game
+/// relaxing, every note is a *degree of a pentatonic scale*: pentatonic notes
+/// never clash, so you can freely retune a sound and it will still sound
+/// pleasant. Prefer soft waveforms, short durations, and low volumes.
 ///
 /// This mirrors the color palette in `theme/palette.dart`: to reshape the
-/// game's audio, edit the constants here — nothing else.
+/// game's audio, edit the constants here, then regenerate.
 library;
 
 /// Waveform timbre, softest first.

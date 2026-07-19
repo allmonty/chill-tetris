@@ -95,11 +95,6 @@ class Piece {
       .map((o) => Offset2(col + o.dx, row + o.dy))
       .toList();
 
-  /// Cells the piece would occupy at the given rotation without moving.
-  List<Offset2> cellsAtRotation(int rot) => data.rotations[rot]
-      .map((o) => Offset2(col + o.dx, row + o.dy))
-      .toList();
-
   Piece copy() => Piece(type, col: col, row: row, rotation: rotation);
 
   int nextRotation() => (rotation + 1) % data.rotationCount;

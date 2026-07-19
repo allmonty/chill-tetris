@@ -6,16 +6,22 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('Shipped levels.json', () {
+    late LevelCatalog catalog;
     late List<LevelConfig> levels;
 
     setUpAll(() {
       final source = File('assets/levels/levels.json').readAsStringSync();
-      levels = LevelConfig.listFromJsonString(source);
+      catalog = LevelCatalog.fromJsonString(source);
+      levels = catalog.levels;
     });
 
-    test('has 15 levels numbered 1..15', () {
-      expect(levels.length, 15);
-      expect(levels.map((l) => l.level), List.generate(15, (i) => i + 1));
+    test('has 50 levels numbered 1..50', () {
+      expect(levels.length, 50);
+      expect(levels.map((l) => l.level), List.generate(50, (i) => i + 1));
+    });
+
+    test('unlockedAtStart is a sane level count', () {
+      expect(catalog.unlockedAtStart, inInclusiveRange(1, levels.length));
     });
 
     test('target scores increase monotonically', () {
@@ -48,6 +54,44 @@ void main() {
     });
   });
 
+  group('LevelCatalog parsing', () {
+    const levelJson = '{"level": 1, "targetScore": 100, "initialPieces": []},'
+        '{"level": 2, "targetScore": 200, "initialPieces": []}';
+
+    test('reads unlockedAtStart from the catalog object', () {
+      final catalog = LevelCatalog.fromJsonString(
+          '{"unlockedAtStart": 2, "levels": [$levelJson]}');
+      expect(catalog.unlockedAtStart, 2);
+      expect(catalog.levels.length, 2);
+    });
+
+    test('defaults unlockedAtStart to 1 when absent', () {
+      final catalog = LevelCatalog.fromJsonString('{"levels": [$levelJson]}');
+      expect(catalog.unlockedAtStart, 1);
+    });
+
+    test('accepts the legacy bare-list format', () {
+      final catalog = LevelCatalog.fromJsonString('[$levelJson]');
+      expect(catalog.unlockedAtStart, 1);
+      expect(catalog.levels.length, 2);
+    });
+
+    test('clamps unlockedAtStart into 1..levels.length', () {
+      expect(
+        LevelCatalog.fromJsonString(
+                '{"unlockedAtStart": 0, "levels": [$levelJson]}')
+            .unlockedAtStart,
+        1,
+      );
+      expect(
+        LevelCatalog.fromJsonString(
+                '{"unlockedAtStart": 99, "levels": [$levelJson]}')
+            .unlockedAtStart,
+        2,
+      );
+    });
+  });
+
   group('LevelConfig parsing', () {
     test('parses a valid level list', () {
       const source = '''
@@ -62,7 +106,7 @@ void main() {
         }
       ]
       ''';
-      final levels = LevelConfig.listFromJsonString(source);
+      final levels = LevelCatalog.fromJsonString(source).levels;
       expect(levels.length, 1);
       expect(levels.first.level, 1);
       expect(levels.first.targetScore, 500);
@@ -72,7 +116,7 @@ void main() {
 
     test('missing initialPieces defaults to an empty layout', () {
       const source = '[{"level": 3, "targetScore": 1000}]';
-      final levels = LevelConfig.listFromJsonString(source);
+      final levels = LevelCatalog.fromJsonString(source).levels;
       expect(levels.first.initialCells, isEmpty);
     });
 
@@ -92,7 +136,7 @@ void main() {
       ''';
       List<LevelConfig> levels;
       try {
-        levels = LevelConfig.listFromJsonString(source);
+        levels = LevelCatalog.fromJsonString(source).levels;
       } on AssertionError {
         // In debug the assert trips first; that's acceptable — the guard exists.
         return;
