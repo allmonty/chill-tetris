@@ -64,6 +64,28 @@ Every animation tunable (durations, bounce scale, stagger, curves) lives in
 [lib/game/animation_config.dart](lib/game/animation_config.dart). Adjust the
 constants there to change the feel without touching gameplay logic.
 
+## Sound effects
+
+Sounds are **synthesized in code** — there are no audio files. Each effect is
+defined as data in [lib/audio/sound_config.dart](lib/audio/sound_config.dart),
+the audio equivalent of the color palette. To keep the game relaxing, every
+note is a degree of a **pentatonic scale**, so any retuning still sounds
+pleasant; prefer soft waveforms, short durations, and low volume.
+
+```dart
+Sfx.rotate: SoundSpec(degrees: [4], noteDuration: 0.08, volume: 0.24),
+```
+
+- `SoundConfig.masterVolume`, `baseFrequency`, and `scale` set the global feel.
+- `SoundConfig.sounds` maps each game event (`Sfx.rotate`, `Sfx.lock`,
+  `Sfx.lineClear1`…) to a `SoundSpec` (which notes, timbre, envelope, volume).
+- [lib/audio/tone_synth.dart](lib/audio/tone_synth.dart) renders a spec to a WAV
+  buffer; [lib/audio/sound_service.dart](lib/audio/sound_service.dart) plays it
+  with low latency and degrades to silence if audio can't start.
+
+Sound can be muted from the speaker button on the home screen (the choice is
+saved).
+
 ## Running
 
 ```sh

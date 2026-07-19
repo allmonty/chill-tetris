@@ -4,6 +4,8 @@ import 'dart:ui' show Color;
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 
+import '../audio/sound_config.dart';
+import '../audio/sound_service.dart';
 import '../models/board.dart';
 import '../models/scoring.dart';
 import '../models/tetromino.dart';
@@ -165,6 +167,7 @@ class TetrisGame extends FlameGame with TapCallbacks, DragCallbacks {
     board.lock(active!);
     active = null;
     animator.triggerLockBounce(locked);
+    SoundService.instance.play(Sfx.lock);
 
     final full = board.fullRows();
     if (full.isEmpty) {
@@ -197,11 +200,22 @@ class TetrisGame extends FlameGame with TapCallbacks, DragCallbacks {
     clearingRows = const [];
     phase = GamePhase.playing;
 
+    _playLineClear(n);
     linesCleared += n;
     _addScore(lineClearScore(n));
     _updateSpeed();
 
     if (!hasWon) _spawn();
+  }
+
+  void _playLineClear(int lines) {
+    final sfx = switch (lines) {
+      1 => Sfx.lineClear1,
+      2 => Sfx.lineClear2,
+      3 => Sfx.lineClear3,
+      _ => Sfx.lineClear4,
+    };
+    SoundService.instance.play(sfx);
   }
 
   void _spawn() {
@@ -221,6 +235,7 @@ class TetrisGame extends FlameGame with TapCallbacks, DragCallbacks {
     onScoreChanged?.call(score);
     if (mode is StageMode && score >= targetScore) {
       hasWon = true;
+      SoundService.instance.play(Sfx.levelWin);
       onWin?.call(score);
     }
   }
@@ -237,6 +252,7 @@ class TetrisGame extends FlameGame with TapCallbacks, DragCallbacks {
 
   void _gameOver() {
     isOver = true;
+    SoundService.instance.play(Sfx.gameOver);
     onGameOver?.call(score);
   }
 
@@ -246,6 +262,7 @@ class TetrisGame extends FlameGame with TapCallbacks, DragCallbacks {
     final p = active!;
     if (board.canPlaceAt(p, col: p.col + dCol, row: p.row)) {
       p.col += dCol;
+      SoundService.instance.play(Sfx.move);
     }
   }
 
@@ -264,6 +281,7 @@ class TetrisGame extends FlameGame with TapCallbacks, DragCallbacks {
   void hardDrop() {
     if (!_active) return;
     final p = active!;
+    SoundService.instance.play(Sfx.hardDrop);
     while (board.canPlaceAt(p, col: p.col, row: p.row + 1)) {
       p.row += 1;
     }
@@ -279,6 +297,7 @@ class TetrisGame extends FlameGame with TapCallbacks, DragCallbacks {
       if (board.canPlaceAt(p, col: p.col + kick, row: p.row, rotation: next)) {
         p.col += kick;
         p.rotation = next;
+        SoundService.instance.play(Sfx.rotate);
         return;
       }
     }

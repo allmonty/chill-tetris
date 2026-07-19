@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../audio/sound_config.dart';
+import '../audio/sound_service.dart';
 import '../game/game_mode.dart';
 import '../theme/palette.dart';
 import 'game_screen.dart';
@@ -15,50 +17,62 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: p.background,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'Chill',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 56,
-                  fontWeight: FontWeight.w300,
-                  letterSpacing: 2,
-                  color: p.textPrimary,
-                ),
+        child: Stack(
+          children: [
+            Align(
+              alignment: Alignment.topRight,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: SoundToggleButton(),
               ),
-              Text(
-                'TETRIS',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 44,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 10,
-                  color: p.accent,
-                ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Chill',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 56,
+                      fontWeight: FontWeight.w300,
+                      letterSpacing: 2,
+                      color: p.textPrimary,
+                    ),
+                  ),
+                  Text(
+                    'TETRIS',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 44,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 10,
+                      color: p.accent,
+                    ),
+                  ),
+                  const SizedBox(height: 64),
+                  _MenuButton(
+                    label: 'Stage',
+                    filled: true,
+                    onTap: () => Navigator.of(
+                      context,
+                    ).pushNamed(LevelSelectScreen.route),
+                  ),
+                  const SizedBox(height: 16),
+                  _MenuButton(
+                    label: 'Infinite',
+                    filled: false,
+                    onTap: () => Navigator.of(context).pushNamed(
+                      GameScreen.route,
+                      arguments: const InfiniteMode(),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 64),
-              _MenuButton(
-                label: 'Stage',
-                filled: true,
-                onTap: () => Navigator.of(context)
-                    .pushNamed(LevelSelectScreen.route),
-              ),
-              const SizedBox(height: 16),
-              _MenuButton(
-                label: 'Infinite',
-                filled: false,
-                onTap: () => Navigator.of(context).pushNamed(
-                  GameScreen.route,
-                  arguments: const InfiniteMode(),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -90,7 +104,10 @@ class _MenuButtonState extends State<_MenuButton> {
       onTapDown: (_) => setState(() => _pressed = true),
       onTapCancel: () => setState(() => _pressed = false),
       onTapUp: (_) => setState(() => _pressed = false),
-      onTap: widget.onTap,
+      onTap: () {
+        SoundService.instance.play(Sfx.uiTap);
+        widget.onTap();
+      },
       child: AnimatedScale(
         scale: _pressed ? 0.97 : 1.0,
         duration: const Duration(milliseconds: 90),
@@ -110,6 +127,40 @@ class _MenuButtonState extends State<_MenuButton> {
               letterSpacing: 1,
               color: widget.filled ? p.textOnAccent : p.textPrimary,
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A speaker icon that toggles sound on/off and persists the choice.
+class SoundToggleButton extends StatelessWidget {
+  const SoundToggleButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = Palette.current;
+    return ValueListenableBuilder<bool>(
+      valueListenable: SoundService.instance.enabled,
+      builder: (_, enabled, _) => GestureDetector(
+        onTap: () {
+          SoundService.instance.toggle();
+          if (SoundService.instance.enabled.value) {
+            SoundService.instance.play(Sfx.uiTap);
+          }
+        },
+        child: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: p.surface,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(
+            enabled ? Icons.volume_up_rounded : Icons.volume_off_rounded,
+            color: enabled ? p.textPrimary : p.textSecondary,
+            size: 22,
           ),
         ),
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'audio/sound_service.dart';
 import 'game/game_mode.dart';
 import 'screens/game_screen.dart';
 import 'screens/home_screen.dart';
@@ -13,6 +14,8 @@ Future<void> main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+  // Warm up audio; degrades silently if the platform has no output.
+  await SoundService.instance.init();
   runApp(const ChillTetrisApp());
 }
 

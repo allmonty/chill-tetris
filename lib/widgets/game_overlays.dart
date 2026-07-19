@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../audio/sound_config.dart';
+import '../audio/sound_service.dart';
 import '../game/game_mode.dart';
 import '../game/tetris_game.dart';
 import '../theme/palette.dart';
@@ -215,7 +217,10 @@ class _RoundIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = Palette.current;
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        SoundService.instance.play(Sfx.uiTap);
+        onTap();
+      },
       child: Container(
         width: 44,
         height: 44,
@@ -305,7 +310,10 @@ class OverlayButton extends StatelessWidget {
       child: SizedBox(
         width: double.infinity,
         child: GestureDetector(
-          onTap: onTap,
+          onTap: () {
+            SoundService.instance.play(Sfx.uiTap);
+            onTap();
+          },
           child: Container(
             height: 54,
             alignment: Alignment.center,

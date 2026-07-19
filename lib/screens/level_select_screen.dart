@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../audio/sound_config.dart';
+import '../audio/sound_service.dart';
 import '../game/game_mode.dart';
 import '../models/level_config.dart';
 import '../services/progress_service.dart';
@@ -38,6 +40,7 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
   }
 
   Future<void> _openLevel(LevelConfig level) async {
+    SoundService.instance.play(Sfx.uiTap);
     await Navigator.of(context).pushNamed(
       GameScreen.route,
       arguments: StageMode(level),
