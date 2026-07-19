@@ -407,7 +407,7 @@ class LevelClearOverlay extends StatelessWidget {
         actions: [
           if (!isLastLevel) OverlayButton(label: 'Next Level', onTap: onNext),
           OverlayButton(
-            label: isLastLevel ? 'Menu' : 'Back to Levels',
+            label: 'Back to Levels',
             onTap: onMenu,
             filled: isLastLevel,
           ),

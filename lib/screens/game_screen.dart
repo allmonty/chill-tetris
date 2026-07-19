@@ -99,14 +99,17 @@ class _GameScreenState extends State<GameScreen> {
     ).pushReplacementNamed(GameScreen.route, arguments: widget.mode);
   }
 
-  void _backToMenu() {
-    Navigator.of(context).popUntil((route) => route.isFirst);
+  /// Returns to whatever screen launched the game (level select for stage
+  /// mode, home for infinite). Restart/next-level use pushReplacement, so the
+  /// screen below is always the original launcher.
+  void _exitGame() {
+    Navigator.of(context).pop();
   }
 
   void _nextLevel() {
     final next = _nextLevelConfig;
     if (next == null) {
-      _backToMenu();
+      _exitGame();
       return;
     }
     Navigator.of(
@@ -127,7 +130,7 @@ class _GameScreenState extends State<GameScreen> {
             game: _game,
             score: _score,
             onPause: _togglePause,
-            onBack: _backToMenu,
+            onBack: _exitGame,
           ),
           Expanded(
             // Keep the board clear of the Android system nav bar / home
@@ -141,19 +144,19 @@ class _GameScreenState extends State<GameScreen> {
                     onResume: _togglePause,
                     onSettings: () => Navigator.of(context)
                         .pushNamed(SettingsScreen.route),
-                    onQuit: _backToMenu,
+                    onQuit: _exitGame,
                   ),
                   gameOver: (_, game) => GameOverOverlay(
                     score: game.score,
                     isNewHighScore: _newHighScore,
                     onRetry: _restart,
-                    onMenu: _backToMenu,
+                    onMenu: _exitGame,
                   ),
                   win: (_, game) => LevelClearOverlay(
                     score: game.score,
                     isLastLevel: _isLastLevel,
                     onNext: _nextLevel,
-                    onMenu: _backToMenu,
+                    onMenu: _exitGame,
                   ),
                 },
               ),
