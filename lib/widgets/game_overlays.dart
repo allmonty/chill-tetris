@@ -1,9 +1,13 @@
+import 'dart:math';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../audio/sound_config.dart';
 import '../audio/sound_service.dart';
 import '../game/game_mode.dart';
 import '../game/tetris_game.dart';
+import '../models/tetromino.dart';
 import '../theme/palette.dart';
 
 /// A solid top bar that sits *above* the board (not floating over it): back
@@ -52,6 +56,8 @@ class GameTopBar extends StatelessWidget {
                         ),
                 ),
               ),
+              _NextPieceChip(nextPiece: game.nextPiece),
+              const SizedBox(width: 10),
               _RoundIconButton(icon: Icons.pause, onTap: onPause),
             ],
           ),
@@ -232,6 +238,82 @@ class _RoundIconButton extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Shows the piece that will spawn next, drawn like a mini board cell cluster.
+class _NextPieceChip extends StatelessWidget {
+  const _NextPieceChip({required this.nextPiece});
+
+  final ValueListenable<TetrominoType?> nextPiece;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = Palette.current;
+    return Container(
+      width: 56,
+      height: 44,
+      decoration: BoxDecoration(
+        color: p.boardBackground,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ValueListenableBuilder<TetrominoType?>(
+        valueListenable: nextPiece,
+        builder: (_, type, _) => type == null
+            ? const SizedBox.shrink()
+            : CustomPaint(painter: _NextPiecePainter(type)),
+      ),
+    );
+  }
+}
+
+class _NextPiecePainter extends CustomPainter {
+  _NextPiecePainter(this.type);
+
+  final TetrominoType type;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final data = tetrominoes[type]!;
+    final cells = data.rotations.first;
+    final color = Palette.current.pieceColors[data.colorIndex];
+
+    // Bounding box of the rotation-0 shape, so the piece is centered whatever
+    // its extent.
+    var minX = 3, maxX = 0, minY = 3, maxY = 0;
+    for (final c in cells) {
+      minX = min(minX, c.dx);
+      maxX = max(maxX, c.dx);
+      minY = min(minY, c.dy);
+      maxY = max(maxY, c.dy);
+    }
+    final cols = maxX - minX + 1;
+    final rows = maxY - minY + 1;
+
+    const pad = 6.0;
+    const gap = 1.5;
+    final cell = min(
+      (size.width - pad * 2) / cols,
+      (size.height - pad * 2) / rows,
+    );
+    final originX = (size.width - cell * cols) / 2;
+    final originY = (size.height - cell * rows) / 2;
+
+    final paint = Paint()..color = color;
+    for (final c in cells) {
+      final left = originX + (c.dx - minX) * cell + gap;
+      final top = originY + (c.dy - minY) * cell + gap;
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(left, top, cell - gap * 2, cell - gap * 2),
+          const Radius.circular(2.5),
+        ),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_NextPiecePainter old) => old.type != type;
 }
 
 /// Shared frame for the modal overlays (pause / game over / win).
