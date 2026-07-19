@@ -54,36 +54,36 @@ void main() {
     test('a full row is detected and cleared', () {
       final board = withFullRow(Board.rows - 1);
       expect(board.fullRows(), [Board.rows - 1]);
-      expect(board.clearFullLines(), 1);
+      expect(board.clearRows(board.fullRows()), 1);
       expect(board.fullRows(), isEmpty);
     });
 
     test('cells above a cleared row drop down by one', () {
       final board = withFullRow(Board.rows - 1);
       board.setCell(0, Board.rows - 2, 5); // sits just above the full row
-      board.clearFullLines();
+      board.clearRows(board.fullRows());
       // After clearing, the lone cell should have fallen to the bottom row.
       expect(board.cells[Board.rows - 1][0], 5);
     });
 
     test('clearing an empty board clears nothing', () {
-      expect(Board().clearFullLines(), 0);
+      final board = Board();
+      expect(board.clearRows(board.fullRows()), 0);
     });
   });
 
   group('Top out', () {
-    test('wouldTopOut when spawn cells are occupied', () {
+    test('spawn is blocked when its cells are occupied', () {
       final board = Board();
       final spawn = Piece(TetrominoType.o, col: 4, row: 0);
       for (final cell in spawn.cells) {
         board.setCell(cell.dx, cell.dy, 2);
       }
-      expect(board.wouldTopOut(spawn), isTrue);
+      expect(board.canPlace(spawn), isFalse);
     });
 
-    test('does not top out on an empty board', () {
-      expect(Board().wouldTopOut(Piece(TetrominoType.o, col: 4, row: 0)),
-          isFalse);
+    test('spawn fits on an empty board', () {
+      expect(Board().canPlace(Piece(TetrominoType.o, col: 4, row: 0)), isTrue);
     });
   });
 

@@ -65,10 +65,6 @@ class LevelConfig {
       initialCells: valid,
     );
   }
-
-  /// Parses the full list of levels from a JSON string.
-  static List<LevelConfig> listFromJsonString(String source) =>
-      LevelCatalog.fromJsonString(source).levels;
 }
 
 /// The full set of stages plus catalog-wide settings from levels.json.

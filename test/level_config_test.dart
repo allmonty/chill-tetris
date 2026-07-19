@@ -106,7 +106,7 @@ void main() {
         }
       ]
       ''';
-      final levels = LevelConfig.listFromJsonString(source);
+      final levels = LevelCatalog.fromJsonString(source).levels;
       expect(levels.length, 1);
       expect(levels.first.level, 1);
       expect(levels.first.targetScore, 500);
@@ -116,7 +116,7 @@ void main() {
 
     test('missing initialPieces defaults to an empty layout', () {
       const source = '[{"level": 3, "targetScore": 1000}]';
-      final levels = LevelConfig.listFromJsonString(source);
+      final levels = LevelCatalog.fromJsonString(source).levels;
       expect(levels.first.initialCells, isEmpty);
     });
 
@@ -136,7 +136,7 @@ void main() {
       ''';
       List<LevelConfig> levels;
       try {
-        levels = LevelConfig.listFromJsonString(source);
+        levels = LevelCatalog.fromJsonString(source).levels;
       } on AssertionError {
         // In debug the assert trips first; that's acceptable — the guard exists.
         return;

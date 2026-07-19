@@ -18,7 +18,7 @@ Two modes, chosen from the home screen:
 - **Infinite** — start on an empty board and chase a high score. Fall speed
   graduates upward every 10 cleared lines until it caps at full speed. Ends on
   top-out; the high score persists.
-- **Stage** — 15 hand-designed levels, each starting with pre-placed blocks and
+- **Stage** — 50 hand-designed levels, each starting with pre-placed blocks and
   cleared by reaching a target score. Levels unlock in sequence; progress is
   saved between sessions.
 
@@ -41,7 +41,6 @@ Two modes, chosen from the home screen:
   - `flame: ^1.37.0` — game loop, rendering, gesture input.
   - `audioplayers: ^6.7.1` — audio playback (see the pivot note in §9).
   - `shared_preferences: ^2.5.5` — progress + settings persistence.
-  - `cupertino_icons` — icon font.
 - Dev: `flutter_test`, `flutter_lints`.
 
 ### Key decisions (and why)
@@ -85,8 +84,10 @@ can reach them.
 lib/
   main.dart                     App entry: portrait lock, routes (/ , /levels, /game,
                                 /settings), theme, SoundService.instance.init() before
-                                runApp, and a NavigatorObserver that re-asserts music
-                                on every page transition (see §9).
+                                runApp, plus three music keep-alive hooks (see §9): a
+                                NavigatorObserver (page transitions), a lifecycle
+                                observer (app resumed), and a passthrough pointer
+                                Listener (any tap, for web autoplay restrictions).
   theme/
     palette.dart                GamePalette (semantic color roles) + midCenturyModern
                                 (default) and dusk (example). Palette.current is the
@@ -94,7 +95,8 @@ lib/
     app_theme.dart              Bridges the GamePalette into Flutter ThemeData for menus.
   models/                       PURE DART, engine-agnostic, unit tested:
     board.dart                  10x20 grid of int? (palette color index). Collision
-                                (canPlace/canPlaceAt), lock, fullRows, clearRows, top-out.
+                                (canPlace/canPlaceAt), lock, fullRows, clearRows.
+                                Top-out is just canPlace failing at spawn.
     tetromino.dart              7 pieces (I,O,T,S,Z,J,L), rotation states, color index,
                                 Piece (mutable active piece), SevenBag (fair spawner).
     scoring.dart                lineClearScore(lines): 100/300/500/800 for 1/2/3/4.
@@ -106,7 +108,6 @@ lib/
                                 gesture handling, fires audio events.
     board_component.dart        Renders board bg, faint grid, locked cells (with lock
                                 bounce + settle offsets), ghost piece, active piece.
-    piece_component.dart        (Piece rendering helpers, used by board rendering.)
     game_mode.dart              sealed GameMode: InfiniteMode | StageMode(LevelConfig).
     animation_config.dart       All game-feel tunables (durations, scales, curves).
     cell_animator.dart          Per-cell tween tracker (scale/opacity/settle) advanced
@@ -261,7 +262,7 @@ object with catalog-wide settings and 50 level entries:
 All tunables in [lib/game/animation_config.dart](lib/game/animation_config.dart)
 — deliberately subtle to stay relaxing:
 
-- **Lock bounce:** 200ms, scale 1.08, `easeOutBack`.
+- **Lock bounce:** 200ms, scale 1.08, a smooth sine up-and-back.
 - **Line clear:** each cell bounces to 1.12 then shrinks/fades over 320ms, with
   a 25ms-per-column left-to-right stagger.
 - **Rows settle:** 220ms `easeOut` down into place.
@@ -371,12 +372,16 @@ way as the SFX (§8) — `assets/audio/music.wav`, committed, no runtime synthes
   ensureMusicPlaying()` re-asserts playback (calls `resume()`) whenever music
   is supposed to be on but its player's `state` isn't `playing` — it never
   interrupts an already-looping track, only recovers a stopped/paused one.
-  It's called from every [play] (any SFX firing is itself proof of life) and,
-  more importantly, from a `NavigatorObserver` in `main.dart` on every
-  `didPush`/`didPop`/`didReplace` — so music that got paused or dropped by a
-  platform quirk (audio focus changes, a backgrounded tab, etc.) picks back up
-  the moment the player moves to another screen, rather than staying silent
-  for the rest of the session.
+  It's called from every [play] (any SFX firing is itself proof of life) and
+  from three hooks in `main.dart`: a `NavigatorObserver` on every
+  `didPush`/`didPop`/`didReplace`, a `WidgetsBindingObserver` when the app
+  returns to the foreground (the OS pauses audio while backgrounded and won't
+  restart it), and a passthrough `Listener` that fires on any pointer-down
+  anywhere (browsers refuse to start audio before a user gesture, so the
+  initial start in `init()` can be silently dropped — the first tap on any
+  screen kicks it back on). So music that got paused or dropped by a platform
+  quirk picks back up almost immediately rather than staying silent for the
+  rest of the session.
 
 ### Important pivot: flutter_soloud → audioplayers
 
@@ -474,6 +479,11 @@ flutter build apk --debug   # Android build (used to verify audioplayers)
 ## 12. Git history (most recent first)
 
 ```
+Remove unused code and refresh PROJECT.md
+Add audio settings and keep background music always playing
+Expand to 50 pixel-art levels; make starting unlocks configurable
+Merge pull request #1 from allmonty/build-chill-tetris
+Add PROJECT.md with full context; slim README to a pointer
 Add synthesized, looping chill background music
 Play land and line-clear sounds without delay
 Add synthesized, palette-style sound effects
@@ -489,7 +499,8 @@ Scaffold app, palette, routes and home screen
 Initial commit
 ```
 
-Work is committed on the `build-chill-tetris` branch (default branch: `main`).
+Default branch: `main`; recent work is on the `audio-settings-and-music-fix`
+branch.
 
 ---
 

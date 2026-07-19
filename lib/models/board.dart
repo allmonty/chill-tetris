@@ -15,8 +15,6 @@ class Board {
 
   bool _inside(int c, int r) => c >= 0 && c < columns && r >= 0 && r < rows;
 
-  bool isEmptyAt(int c, int r) => _inside(c, r) && cells[r][c] == null;
-
   /// Whether [piece] can occupy its current cells (in bounds and not
   /// overlapping locked cells).
   bool canPlace(Piece piece) => _cellsFree(piece.cells);
@@ -80,10 +78,4 @@ class Board {
     }
     return rowsToClear.length;
   }
-
-  /// Convenience: clear all full rows in one step, returning the count.
-  int clearFullLines() => clearRows(fullRows());
-
-  /// True when the top rows are occupied, i.e. a new piece cannot spawn.
-  bool wouldTopOut(Piece spawn) => !canPlace(spawn);
 }

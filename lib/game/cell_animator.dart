@@ -74,6 +74,4 @@ class CellAnimator {
     // Starts lifted up by deltaRows and eases down to 0.
     return -s.deltaRows * cellSize * (1 - p);
   }
-
-  bool get isEmpty => _lockElapsed.isEmpty && _settle.isEmpty;
 }

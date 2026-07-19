@@ -34,9 +34,6 @@ class AnimationConfig {
   static const Duration spawnFadeDuration = Duration(milliseconds: 140);
 
   // --- Curves ---------------------------------------------------------------
-  /// Soft overshoot used for bounces.
-  static const Curve bounceCurve = Curves.easeOutBack;
-
   /// Gentle deceleration used for settles and fades.
   static const Curve settleCurve = Curves.easeOut;
 }

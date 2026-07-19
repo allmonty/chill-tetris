@@ -195,12 +195,12 @@ class SoundService {
     } else {
       _pauseMusic();
     }
-    await _persistBool(AudioSettings.kMusicEnabled, value);
+    await _persist((prefs) => prefs.setBool(AudioSettings.kMusicEnabled, value));
   }
 
   Future<void> setSfxEnabled(bool value) async {
     sfxEnabled.value = value;
-    await _persistBool(AudioSettings.kSfxEnabled, value);
+    await _persist((prefs) => prefs.setBool(AudioSettings.kSfxEnabled, value));
   }
 
   /// Applies [volume] to the music player immediately. Pass
@@ -211,7 +211,10 @@ class SoundService {
     unawaited(
       _musicPlayer?.setVolume(_effectiveMusicVolume).catchError((Object _) {}),
     );
-    if (persist) await _persistDouble(AudioSettings.kMusicVolume, musicVolume.value);
+    if (persist) {
+      final value = musicVolume.value;
+      await _persist((prefs) => prefs.setDouble(AudioSettings.kMusicVolume, value));
+    }
   }
 
   /// Updates the volume used for the *next* [play] call. SFX are all under a
@@ -219,22 +222,16 @@ class SoundService {
   /// mid-flight — nor any point doing so.
   Future<void> setSfxVolume(double volume, {bool persist = false}) async {
     sfxVolume.value = volume.clamp(0.0, 1.0);
-    if (persist) await _persistDouble(AudioSettings.kSfxVolume, sfxVolume.value);
-  }
-
-  Future<void> _persistBool(String key, bool value) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool(key, value);
-    } catch (_) {
-      // Non-fatal: the setting still works for this session.
+    if (persist) {
+      final value = sfxVolume.value;
+      await _persist((prefs) => prefs.setDouble(AudioSettings.kSfxVolume, value));
     }
   }
 
-  Future<void> _persistDouble(String key, double value) async {
+  Future<void> _persist(
+      Future<void> Function(SharedPreferences prefs) write) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setDouble(key, value);
+      await write(await SharedPreferences.getInstance());
     } catch (_) {
       // Non-fatal: the setting still works for this session.
     }
