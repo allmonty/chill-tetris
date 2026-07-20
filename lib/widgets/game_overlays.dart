@@ -46,10 +46,7 @@ class GameTopBar extends StatelessWidget {
                 child: ValueListenableBuilder<int>(
                   valueListenable: score,
                   builder: (_, value, _) => isStage
-                      ? _StageReadout(
-                          score: value,
-                          target: game.targetScore,
-                        )
+                      ? _StageReadout(score: value, target: game.targetScore)
                       : _InfiniteReadout(
                           score: value,
                           speed: game.speedLevel + 1,
@@ -334,7 +331,8 @@ class _ModalCard extends StatelessWidget {
         tween: Tween(begin: 0.92, end: 1.0),
         duration: const Duration(milliseconds: 220),
         curve: Curves.easeOutBack,
-        builder: (_, scale, child) => Transform.scale(scale: scale, child: child),
+        builder: (_, scale, child) =>
+            Transform.scale(scale: scale, child: child),
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 40),
           padding: const EdgeInsets.all(28),
@@ -432,13 +430,37 @@ class PauseOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => _ModalCard(
-        title: 'Paused',
-        actions: [
-          OverlayButton(label: 'Resume', onTap: onResume),
-          OverlayButton(label: 'Settings', onTap: onSettings, filled: false),
-          OverlayButton(label: 'Quit', onTap: onQuit, filled: false),
-        ],
-      );
+    title: 'Paused',
+    actions: [
+      OverlayButton(label: 'Resume', onTap: onResume),
+      OverlayButton(label: 'Settings', onTap: onSettings, filled: false),
+      OverlayButton(label: 'Quit', onTap: onQuit, filled: false),
+    ],
+  );
+}
+
+/// Confirmation shown when the player triggers a back gesture / button during
+/// active play — the Android edge-swipe is easy to hit by accident, and losing
+/// a run to it feels awful. "Keep Playing" is the safe default (filled).
+class ConfirmQuitOverlay extends StatelessWidget {
+  const ConfirmQuitOverlay({
+    super.key,
+    required this.onKeepPlaying,
+    required this.onQuit,
+  });
+
+  final VoidCallback onKeepPlaying;
+  final VoidCallback onQuit;
+
+  @override
+  Widget build(BuildContext context) => _ModalCard(
+    title: 'Leave game?',
+    subtitle: 'Your current run will be lost.',
+    actions: [
+      OverlayButton(label: 'Keep Playing', onTap: onKeepPlaying),
+      OverlayButton(label: 'Quit', onTap: onQuit, filled: false),
+    ],
+  );
 }
 
 class GameOverOverlay extends StatelessWidget {
@@ -457,15 +479,13 @@ class GameOverOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => _ModalCard(
-        title: 'Game Over',
-        subtitle: isNewHighScore
-            ? 'New high score: $score!'
-            : 'Score: $score',
-        actions: [
-          OverlayButton(label: 'Play Again', onTap: onRetry),
-          OverlayButton(label: 'Menu', onTap: onMenu, filled: false),
-        ],
-      );
+    title: 'Game Over',
+    subtitle: isNewHighScore ? 'New high score: $score!' : 'Score: $score',
+    actions: [
+      OverlayButton(label: 'Play Again', onTap: onRetry),
+      OverlayButton(label: 'Menu', onTap: onMenu, filled: false),
+    ],
+  );
 }
 
 class LevelClearOverlay extends StatelessWidget {
@@ -484,15 +504,15 @@ class LevelClearOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => _ModalCard(
-        title: isLastLevel ? 'All Levels Clear!' : 'Level Clear!',
-        subtitle: 'Score: $score',
-        actions: [
-          if (!isLastLevel) OverlayButton(label: 'Next Level', onTap: onNext),
-          OverlayButton(
-            label: 'Back to Levels',
-            onTap: onMenu,
-            filled: isLastLevel,
-          ),
-        ],
-      );
+    title: isLastLevel ? 'All Levels Clear!' : 'Level Clear!',
+    subtitle: 'Score: $score',
+    actions: [
+      if (!isLastLevel) OverlayButton(label: 'Next Level', onTap: onNext),
+      OverlayButton(
+        label: 'Back to Levels',
+        onTap: onMenu,
+        filled: isLastLevel,
+      ),
+    ],
+  );
 }

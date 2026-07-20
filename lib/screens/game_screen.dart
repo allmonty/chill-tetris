@@ -25,6 +25,7 @@ class _GameScreenState extends State<GameScreen> {
   static const pause = 'pause';
   static const gameOver = 'gameOver';
   static const win = 'win';
+  static const confirmExit = 'confirmExit';
 
   late final TetrisGame _game;
   final ValueNotifier<int> _score = ValueNotifier<int>(0);
@@ -33,6 +34,10 @@ class _GameScreenState extends State<GameScreen> {
   bool _newHighScore = false;
   LevelConfig? _nextLevelConfig;
   bool _isLastLevel = false;
+
+  /// True when the exit prompt itself paused the game, so "Keep Playing" knows
+  /// to resume (rather than leaving a game that was already paused paused).
+  bool _pausedForExitPrompt = false;
 
   @override
   void initState() {
@@ -106,6 +111,33 @@ class _GameScreenState extends State<GameScreen> {
     Navigator.of(context).pop();
   }
 
+  /// Handles a system back gesture/button while the game is up. The Android
+  /// edge-swipe is easy to trigger by accident mid-play, so instead of leaving
+  /// we pause the run and ask for confirmation. No-op if the prompt is already
+  /// showing; if the game is already over/won, we just let the pop through.
+  void _requestExit() {
+    if (_game.overlays.isActive(confirmExit)) return;
+    if (_game.isOver || _game.hasWon) {
+      _exitGame();
+      return;
+    }
+    // Freeze the falling piece while the player decides, unless something else
+    // (e.g. the pause menu) already paused it.
+    if (!_game.isPaused) {
+      _game.togglePause();
+      _pausedForExitPrompt = true;
+    }
+    _game.overlays.add(confirmExit);
+  }
+
+  void _dismissExitPrompt() {
+    _game.overlays.remove(confirmExit);
+    if (_pausedForExitPrompt) {
+      _game.togglePause();
+      _pausedForExitPrompt = false;
+    }
+  }
+
   void _nextLevel() {
     final next = _nextLevelConfig;
     if (next == null) {
@@ -120,49 +152,62 @@ class _GameScreenState extends State<GameScreen> {
   @override
   Widget build(BuildContext context) {
     final p = Palette.current;
-    return Scaffold(
-      backgroundColor: p.background,
-      body: Column(
-        children: [
-          // A real top bar with its own vertical space — the board lives below
-          // it and never overlaps it.
-          GameTopBar(
-            game: _game,
-            score: _score,
-            onPause: _togglePause,
-            onBack: _exitGame,
-          ),
-          Expanded(
-            // Keep the board clear of the Android system nav bar / home
-            // indicator at the bottom (and any side insets).
-            child: SafeArea(
-              top: false,
-              child: GameWidget<TetrisGame>(
-                game: _game,
-                overlayBuilderMap: {
-                  pause: (_, _) => PauseOverlay(
-                    onResume: _togglePause,
-                    onSettings: () => Navigator.of(context)
-                        .pushNamed(SettingsScreen.route),
-                    onQuit: _exitGame,
-                  ),
-                  gameOver: (_, game) => GameOverOverlay(
-                    score: game.score,
-                    isNewHighScore: _newHighScore,
-                    onRetry: _restart,
-                    onMenu: _exitGame,
-                  ),
-                  win: (_, game) => LevelClearOverlay(
-                    score: game.score,
-                    isLastLevel: _isLastLevel,
-                    onNext: _nextLevel,
-                    onMenu: _exitGame,
-                  ),
-                },
+    return PopScope(
+      // We never let the framework pop directly — a back gesture routes through
+      // the confirmation prompt instead (which pops itself once confirmed).
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _requestExit();
+      },
+      child: Scaffold(
+        backgroundColor: p.background,
+        body: Column(
+          children: [
+            // A real top bar with its own vertical space — the board lives below
+            // it and never overlaps it.
+            GameTopBar(
+              game: _game,
+              score: _score,
+              onPause: _togglePause,
+              onBack: _exitGame,
+            ),
+            Expanded(
+              // Keep the board clear of the Android system nav bar / home
+              // indicator at the bottom (and any side insets).
+              child: SafeArea(
+                top: false,
+                child: GameWidget<TetrisGame>(
+                  game: _game,
+                  overlayBuilderMap: {
+                    pause: (_, _) => PauseOverlay(
+                      onResume: _togglePause,
+                      onSettings: () =>
+                          Navigator.of(context).pushNamed(SettingsScreen.route),
+                      onQuit: _exitGame,
+                    ),
+                    gameOver: (_, game) => GameOverOverlay(
+                      score: game.score,
+                      isNewHighScore: _newHighScore,
+                      onRetry: _restart,
+                      onMenu: _exitGame,
+                    ),
+                    win: (_, game) => LevelClearOverlay(
+                      score: game.score,
+                      isLastLevel: _isLastLevel,
+                      onNext: _nextLevel,
+                      onMenu: _exitGame,
+                    ),
+                    confirmExit: (_, _) => ConfirmQuitOverlay(
+                      onKeepPlaying: _dismissExitPrompt,
+                      onQuit: _exitGame,
+                    ),
+                  },
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
