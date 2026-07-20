@@ -41,12 +41,20 @@ class _ChillTetrisAppState extends State<ChillTetrisApp>
     super.dispose();
   }
 
-  /// Resume music when the app returns to the foreground — the OS pauses our
-  /// audio while backgrounded and won't restart it on its own.
+  /// Keep music in step with foreground/background. We run audio with
+  /// `mixWithOthers` (no audio focus), so the OS no longer pauses our playback
+  /// when the app is minimized or switched away from — we have to do it
+  /// ourselves, then restart on return.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      SoundService.instance.ensureMusicPlaying();
+    switch (state) {
+      case AppLifecycleState.resumed:
+        SoundService.instance.ensureMusicPlaying();
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.paused:
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.detached:
+        SoundService.instance.pauseMusicForBackground();
     }
   }
 

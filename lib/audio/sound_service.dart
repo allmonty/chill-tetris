@@ -142,6 +142,16 @@ class SoundService {
   void _pauseMusic() =>
       unawaited(_musicPlayer?.pause().catchError((Object _) {}));
 
+  /// Pauses the music loop when the app leaves the foreground. Because we run
+  /// with `mixWithOthers` (no audio-focus request — see [init]), the OS no
+  /// longer stops our playback when the app is backgrounded or minimized, so we
+  /// have to do it ourselves. Resumed via [ensureMusicPlaying] when the app
+  /// comes back (only if music is still enabled).
+  void pauseMusicForBackground() {
+    if (_musicPlayer == null) return;
+    _pauseMusic();
+  }
+
   /// Re-asserts music playback if it's supposed to be on but isn't currently
   /// playing. Only intervenes when the state genuinely isn't `playing`, so it
   /// never interrupts an already-looping track — it's a self-heal for cases
