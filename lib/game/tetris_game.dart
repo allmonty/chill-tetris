@@ -52,7 +52,7 @@ class TetrisGame extends FlameGame with TapCallbacks, DragCallbacks {
   /// How long a piece rests on the stack before it locks. Long enough to
   /// slide a piece under an overhang at the last moment; checked every frame,
   /// not on the gravity clock, so it behaves the same at any fall speed.
-  static const double _lockDelaySeconds = 0.40;
+  static const double _lockDelaySeconds = 0.60;
 
   /// Each successful move/rotate while resting restarts the lock delay
   /// ("move reset"), up to this many times per landing — maneuvering is easy,
