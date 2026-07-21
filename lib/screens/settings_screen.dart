@@ -171,76 +171,74 @@ class _AudioSection extends StatelessWidget {
 }
 
 /// Personalization: pick a preset palette or build your own in one of three
-/// custom slots. Rebuilds on [PaletteService.revision] so slot previews and the
-/// active-selection markers stay in sync.
+/// custom slots. Reads the palette via [PaletteScope] so slot previews and the
+/// active-selection markers rebuild when the active palette changes.
 class _PersonalizationTab extends StatelessWidget {
   const _PersonalizationTab();
 
   @override
   Widget build(BuildContext context) {
     final service = PaletteService.instance;
-    return AnimatedBuilder(
-      animation: service.revision,
-      builder: (context, _) {
-        final p = PaletteScope.of(context);
-        return ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
-            _SectionCard(
-              label: 'PRESET PALETTES',
-              child: Column(
+    // Reading the palette here subscribes this widget to PaletteScope, so it
+    // rebuilds whenever the active palette changes (preset switch, slot edit).
+    final p = PaletteScope.of(context);
+    final slots = service.slots;
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      children: [
+        _SectionCard(
+          label: 'PRESET PALETTES',
+          child: Column(
+            children: [
+              for (var i = 0; i < GamePalette.presets.length; i++) ...[
+                if (i > 0) const SizedBox(height: 10),
+                _PresetRow(
+                  palette: GamePalette.presets[i],
+                  active: service.isPresetActive(GamePalette.presets[i]),
+                  onTap: () {
+                    SoundService.instance.play(Sfx.uiTap);
+                    service.selectPreset(GamePalette.presets[i]);
+                  },
+                ),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        _SectionCard(
+          label: 'CUSTOM PALETTES',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  for (var i = 0; i < GamePalette.presets.length; i++) ...[
-                    if (i > 0) const SizedBox(height: 10),
-                    _PresetRow(
-                      palette: GamePalette.presets[i],
-                      active: service.isPresetActive(GamePalette.presets[i]),
-                      onTap: () {
-                        SoundService.instance.play(Sfx.uiTap);
-                        service.selectPreset(GamePalette.presets[i]);
-                      },
+                  for (var i = 0; i < PaletteSettings.slotCount; i++) ...[
+                    if (i > 0) const SizedBox(width: 12),
+                    Expanded(
+                      child: _SlotCard(
+                        slot: i,
+                        data: slots[i],
+                        active: service.isCustomSlotActive(i),
+                        onActivate: () {
+                          SoundService.instance.play(Sfx.uiTap);
+                          service.selectCustomSlot(i);
+                        },
+                        onEdit: () => _openEditor(context, i),
+                      ),
                     ),
                   ],
                 ],
               ),
-            ),
-            const SizedBox(height: 16),
-            _SectionCard(
-              label: 'CUSTOM PALETTES',
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      for (var i = 0; i < PaletteSettings.slotCount; i++) ...[
-                        if (i > 0) const SizedBox(width: 12),
-                        Expanded(
-                          child: _SlotCard(
-                            slot: i,
-                            data: service.slots[i],
-                            active: service.isCustomSlotActive(i),
-                            onActivate: () {
-                              SoundService.instance.play(Sfx.uiTap);
-                              service.selectCustomSlot(i);
-                            },
-                            onEdit: () => _openEditor(context, i),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Tap + to build a palette from the one in use. '
-                    'Tap a saved slot to use it, or ✎ to edit it.',
-                    style: TextStyle(fontSize: 12, color: p.textSecondary),
-                  ),
-                ],
+              const SizedBox(height: 12),
+              Text(
+                'Tap + to build a palette from the one in use. '
+                'Tap a saved slot to use it, or ✎ to edit it.',
+                style: TextStyle(fontSize: 12, color: p.textSecondary),
               ),
-            ),
-          ],
-        );
-      },
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -501,7 +499,7 @@ List<Color> _previewColors(GamePalette palette) => [
 
 /// Bottom sheet listing the ten editable swatches. Tapping one opens a color
 /// picker whose changes preview live across the app; the sheet's tiles refresh
-/// via [PaletteService.revision].
+/// via [PaletteScope] as the previewed palette updates.
 class _PaletteEditorSheet extends StatelessWidget {
   const _PaletteEditorSheet({required this.slot});
 
@@ -510,86 +508,83 @@ class _PaletteEditorSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final service = PaletteService.instance;
+    // Reading the palette subscribes the sheet to PaletteScope, so its tiles
+    // rebuild live as the color picker drives previewCustomSwatch.
     final p = PaletteScope.of(context);
-    return AnimatedBuilder(
-      animation: service.revision,
-      builder: (context, _) {
-        return Container(
-          decoration: BoxDecoration(
-            color: p.background,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-          child: SafeArea(
-            top: false,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      decoration: BoxDecoration(
+        color: p.background,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: p.textSecondary.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'EDIT PALETTE',
+              style: TextStyle(
+                fontSize: 12,
+                letterSpacing: 1.5,
+                fontWeight: FontWeight.w600,
+                color: p.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 14,
+              runSpacing: 14,
               children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: p.textSecondary.withValues(alpha: 0.4),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
+                for (final role in CustomSwatchRole.values)
+                  _EditorTile(
+                    label: role.label,
+                    color: service.swatchColor(slot, role),
+                    onTap: () => _pickColor(context, slot, role),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'EDIT PALETTE',
-                  style: TextStyle(
-                    fontSize: 12,
-                    letterSpacing: 1.5,
-                    fontWeight: FontWeight.w600,
-                    color: p.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Wrap(
-                  spacing: 14,
-                  runSpacing: 14,
-                  children: [
-                    for (final role in CustomSwatchRole.values)
-                      _EditorTile(
-                        label: role.label,
-                        color: service.swatchColor(slot, role),
-                        onTap: () => _pickColor(context, slot, role),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: GestureDetector(
-                    onTap: () {
-                      SoundService.instance.play(Sfx.uiTap);
-                      Navigator.of(context).pop();
-                    },
-                    child: Container(
-                      height: 52,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: p.accent,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Text(
-                        'Done',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: p.textOnAccent,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
               ],
             ),
-          ),
-        );
-      },
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: GestureDetector(
+                onTap: () {
+                  SoundService.instance.play(Sfx.uiTap);
+                  Navigator.of(context).pop();
+                },
+                child: Container(
+                  height: 52,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: p.accent,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    'Done',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: p.textOnAccent,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

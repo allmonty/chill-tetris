@@ -17,11 +17,13 @@ Future<void> main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  // Load the saved color palette before the first frame so the app opens in
-  // the right theme.
-  await PaletteService.instance.init();
-  // Warm up audio; degrades silently if the platform has no output.
-  await SoundService.instance.init();
+  // Load the saved palette (so the app opens in the right theme) and warm up
+  // audio in parallel — both are independent one-shot preference reads, and
+  // audio degrades silently if the platform has no output.
+  await Future.wait([
+    PaletteService.instance.init(),
+    SoundService.instance.init(),
+  ]);
   runApp(const ChillTetrisApp());
 }
 
