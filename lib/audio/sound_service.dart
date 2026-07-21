@@ -4,6 +4,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../services/prefs_util.dart';
 import 'audio_settings.dart';
 import 'music_config.dart';
 import 'sound_config.dart';
@@ -205,12 +206,12 @@ class SoundService {
     } else {
       _pauseMusic();
     }
-    await _persist((prefs) => prefs.setBool(AudioSettings.kMusicEnabled, value));
+    await persistPrefs((prefs) => prefs.setBool(AudioSettings.kMusicEnabled, value));
   }
 
   Future<void> setSfxEnabled(bool value) async {
     sfxEnabled.value = value;
-    await _persist((prefs) => prefs.setBool(AudioSettings.kSfxEnabled, value));
+    await persistPrefs((prefs) => prefs.setBool(AudioSettings.kSfxEnabled, value));
   }
 
   /// Applies [volume] to the music player immediately. Pass
@@ -223,7 +224,7 @@ class SoundService {
     );
     if (persist) {
       final value = musicVolume.value;
-      await _persist((prefs) => prefs.setDouble(AudioSettings.kMusicVolume, value));
+      await persistPrefs((prefs) => prefs.setDouble(AudioSettings.kMusicVolume, value));
     }
   }
 
@@ -234,16 +235,7 @@ class SoundService {
     sfxVolume.value = volume.clamp(0.0, 1.0);
     if (persist) {
       final value = sfxVolume.value;
-      await _persist((prefs) => prefs.setDouble(AudioSettings.kSfxVolume, value));
-    }
-  }
-
-  Future<void> _persist(
-      Future<void> Function(SharedPreferences prefs) write) async {
-    try {
-      await write(await SharedPreferences.getInstance());
-    } catch (_) {
-      // Non-fatal: the setting still works for this session.
+      await persistPrefs((prefs) => prefs.setDouble(AudioSettings.kSfxVolume, value));
     }
   }
 }

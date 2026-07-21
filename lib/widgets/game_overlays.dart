@@ -8,7 +8,7 @@ import '../audio/sound_service.dart';
 import '../game/game_mode.dart';
 import '../game/tetris_game.dart';
 import '../models/tetromino.dart';
-import '../theme/palette.dart';
+import '../theme/palette_scope.dart';
 
 /// A solid top bar that sits *above* the board (not floating over it): back
 /// button, the score/goal or score/speed readout, and a pause button.
@@ -28,7 +28,7 @@ class GameTopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p = Palette.current;
+    final p = PaletteScope.of(context);
     final isStage = game.mode is StageMode;
     return Container(
       decoration: BoxDecoration(
@@ -46,10 +46,7 @@ class GameTopBar extends StatelessWidget {
                 child: ValueListenableBuilder<int>(
                   valueListenable: score,
                   builder: (_, value, _) => isStage
-                      ? _StageReadout(
-                          score: value,
-                          target: game.targetScore,
-                        )
+                      ? _StageReadout(score: value, target: game.targetScore)
                       : _InfiniteReadout(
                           score: value,
                           speed: game.speedLevel + 1,
@@ -126,7 +123,7 @@ class _ScoreNumber extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p = Palette.current;
+    final p = PaletteScope.of(context);
     return Text(
       '$value',
       style: TextStyle(
@@ -146,7 +143,7 @@ class _Label extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p = Palette.current;
+    final p = PaletteScope.of(context);
     return Text(
       text,
       style: TextStyle(
@@ -166,7 +163,7 @@ class _Chip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p = Palette.current;
+    final p = PaletteScope.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
@@ -192,7 +189,7 @@ class _ProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p = Palette.current;
+    final p = PaletteScope.of(context);
     return SizedBox(
       width: 160,
       child: ClipRRect(
@@ -221,7 +218,7 @@ class _RoundIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p = Palette.current;
+    final p = PaletteScope.of(context);
     return GestureDetector(
       onTap: () {
         SoundService.instance.play(Sfx.uiTap);
@@ -248,7 +245,7 @@ class _NextPieceChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p = Palette.current;
+    final p = PaletteScope.of(context);
     return Container(
       width: 56,
       height: 44,
@@ -260,22 +257,27 @@ class _NextPieceChip extends StatelessWidget {
         valueListenable: nextPiece,
         builder: (_, type, _) => type == null
             ? const SizedBox.shrink()
-            : CustomPaint(painter: _NextPiecePainter(type)),
+            : CustomPaint(
+                painter: _NextPiecePainter(
+                  type,
+                  p.pieceColors[tetrominoes[type]!.colorIndex],
+                ),
+              ),
       ),
     );
   }
 }
 
 class _NextPiecePainter extends CustomPainter {
-  _NextPiecePainter(this.type);
+  _NextPiecePainter(this.type, this.color);
 
   final TetrominoType type;
+  final Color color;
 
   @override
   void paint(Canvas canvas, Size size) {
     final data = tetrominoes[type]!;
     final cells = data.rotations.first;
-    final color = Palette.current.pieceColors[data.colorIndex];
 
     // Bounding box of the rotation-0 shape, so the piece is centered whatever
     // its extent.
@@ -313,7 +315,8 @@ class _NextPiecePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_NextPiecePainter old) => old.type != type;
+  bool shouldRepaint(_NextPiecePainter old) =>
+      old.type != type || old.color != color;
 }
 
 /// Shared frame for the modal overlays (pause / game over / win).
@@ -326,7 +329,7 @@ class _ModalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p = Palette.current;
+    final p = PaletteScope.of(context);
     return Container(
       color: p.background.withValues(alpha: 0.82),
       alignment: Alignment.center,
@@ -334,7 +337,8 @@ class _ModalCard extends StatelessWidget {
         tween: Tween(begin: 0.92, end: 1.0),
         duration: const Duration(milliseconds: 220),
         curve: Curves.easeOutBack,
-        builder: (_, scale, child) => Transform.scale(scale: scale, child: child),
+        builder: (_, scale, child) =>
+            Transform.scale(scale: scale, child: child),
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 40),
           padding: const EdgeInsets.all(28),
@@ -386,7 +390,7 @@ class OverlayButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p = Palette.current;
+    final p = PaletteScope.of(context);
     return Padding(
       padding: const EdgeInsets.only(top: 12),
       child: SizedBox(
@@ -432,13 +436,37 @@ class PauseOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => _ModalCard(
-        title: 'Paused',
-        actions: [
-          OverlayButton(label: 'Resume', onTap: onResume),
-          OverlayButton(label: 'Settings', onTap: onSettings, filled: false),
-          OverlayButton(label: 'Quit', onTap: onQuit, filled: false),
-        ],
-      );
+    title: 'Paused',
+    actions: [
+      OverlayButton(label: 'Resume', onTap: onResume),
+      OverlayButton(label: 'Settings', onTap: onSettings, filled: false),
+      OverlayButton(label: 'Quit', onTap: onQuit, filled: false),
+    ],
+  );
+}
+
+/// Confirmation shown when the player triggers a back gesture / button during
+/// active play — the Android edge-swipe is easy to hit by accident, and losing
+/// a run to it feels awful. "Keep Playing" is the safe default (filled).
+class ConfirmQuitOverlay extends StatelessWidget {
+  const ConfirmQuitOverlay({
+    super.key,
+    required this.onKeepPlaying,
+    required this.onQuit,
+  });
+
+  final VoidCallback onKeepPlaying;
+  final VoidCallback onQuit;
+
+  @override
+  Widget build(BuildContext context) => _ModalCard(
+    title: 'Leave game?',
+    subtitle: 'Your current run will be lost.',
+    actions: [
+      OverlayButton(label: 'Keep Playing', onTap: onKeepPlaying),
+      OverlayButton(label: 'Quit', onTap: onQuit, filled: false),
+    ],
+  );
 }
 
 class GameOverOverlay extends StatelessWidget {
@@ -457,15 +485,13 @@ class GameOverOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => _ModalCard(
-        title: 'Game Over',
-        subtitle: isNewHighScore
-            ? 'New high score: $score!'
-            : 'Score: $score',
-        actions: [
-          OverlayButton(label: 'Play Again', onTap: onRetry),
-          OverlayButton(label: 'Menu', onTap: onMenu, filled: false),
-        ],
-      );
+    title: 'Game Over',
+    subtitle: isNewHighScore ? 'New high score: $score!' : 'Score: $score',
+    actions: [
+      OverlayButton(label: 'Play Again', onTap: onRetry),
+      OverlayButton(label: 'Menu', onTap: onMenu, filled: false),
+    ],
+  );
 }
 
 class LevelClearOverlay extends StatelessWidget {
@@ -484,15 +510,15 @@ class LevelClearOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => _ModalCard(
-        title: isLastLevel ? 'All Levels Clear!' : 'Level Clear!',
-        subtitle: 'Score: $score',
-        actions: [
-          if (!isLastLevel) OverlayButton(label: 'Next Level', onTap: onNext),
-          OverlayButton(
-            label: 'Back to Levels',
-            onTap: onMenu,
-            filled: isLastLevel,
-          ),
-        ],
-      );
+    title: isLastLevel ? 'All Levels Clear!' : 'Level Clear!',
+    subtitle: 'Score: $score',
+    actions: [
+      if (!isLastLevel) OverlayButton(label: 'Next Level', onTap: onNext),
+      OverlayButton(
+        label: 'Back to Levels',
+        onTap: onMenu,
+        filled: isLastLevel,
+      ),
+    ],
+  );
 }
