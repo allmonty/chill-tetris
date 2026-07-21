@@ -84,7 +84,7 @@ class _GameScreenState extends State<GameScreen> {
   Future<void> _handleWin(int score) async {
     if (widget.mode case StageMode(:final level)) {
       final progress = _progress ??= await ProgressService.load();
-      await progress.completeLevel(level.level);
+      await progress.markLevelWon(level.level);
     }
     _game.overlays.add(win);
   }

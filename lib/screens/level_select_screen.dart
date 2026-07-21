@@ -75,12 +75,10 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
               itemCount: catalog.levels.length,
               itemBuilder: (_, i) {
                 final level = catalog.levels[i];
-                final unlocked = level.level <= catalog.unlockedAtStart ||
-                    progress.isLevelUnlocked(level.level);
                 return _LevelTile(
                   level: level.level,
-                  unlocked: unlocked,
-                  onTap: unlocked ? () => _openLevel(level) : null,
+                  won: progress.isLevelWon(level.level),
+                  onTap: () => _openLevel(level),
                 );
               },
             ),
@@ -91,13 +89,15 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
 class _LevelTile extends StatelessWidget {
   const _LevelTile({
     required this.level,
-    required this.unlocked,
+    required this.won,
     required this.onTap,
   });
 
   final int level;
-  final bool unlocked;
-  final VoidCallback? onTap;
+
+  /// Whether this level has been cleared — shows a star badge if so.
+  final bool won;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -106,20 +106,28 @@ class _LevelTile extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: unlocked ? p.accent : p.lockedLevel,
+          color: p.accent,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Center(
-          child: unlocked
-              ? Text(
-                  '$level',
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w700,
-                    color: p.textOnAccent,
-                  ),
-                )
-              : Icon(Icons.lock, color: p.textSecondary, size: 24),
+        child: Stack(
+          children: [
+            Center(
+              child: Text(
+                '$level',
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w700,
+                  color: p.textOnAccent,
+                ),
+              ),
+            ),
+            if (won)
+              Positioned(
+                top: 4,
+                right: 4,
+                child: Icon(Icons.star_rounded, color: p.textOnAccent, size: 18),
+              ),
+          ],
         ),
       ),
     );
