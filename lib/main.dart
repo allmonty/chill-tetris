@@ -87,6 +87,7 @@ class _ChillTetrisAppState extends State<ChillTetrisApp>
         title: 'Chill Tetris',
         debugShowCheckedModeBanner: false,
         theme: buildAppTheme(),
+        scrollBehavior: const _BouncyScrollBehavior(),
         // Wrap the Navigator (not individual routes) so every screen can read
         // the live palette via PaletteScope.of(context) and rebuild on change.
         builder: (context, child) => PaletteScope(
@@ -110,6 +111,23 @@ class _ChillTetrisAppState extends State<ChillTetrisApp>
       ),
     );
   }
+}
+
+/// iOS-style scrolling everywhere: lists rubber-band past their ends and
+/// spring back, instead of the Material default that stretches (scales) the
+/// content on overscroll. Dropping the overscroll indicator leaves the bounce
+/// as the only edge feedback.
+class _BouncyScrollBehavior extends MaterialScrollBehavior {
+  const _BouncyScrollBehavior();
+
+  @override
+  Widget buildOverscrollIndicator(
+          BuildContext context, Widget child, ScrollableDetails details) =>
+      child;
+
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) =>
+      const BouncingScrollPhysics();
 }
 
 /// Re-asserts background music on every page transition — see
