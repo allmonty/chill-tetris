@@ -138,9 +138,11 @@ class TetrisGame extends FlameGame with TapCallbacks, DragCallbacks {
 
   double _initialInterval() {
     if (mode is StageMode) {
-      // Slightly quicker on later levels, but always comfortable.
+      // Slightly quicker on later levels, but always comfortable. Tuned so
+      // the floor is reached right around level 50 rather than plateauing
+      // partway through the stage list.
       final lvl = (mode as StageMode).level.level;
-      return (0.9 - lvl * 0.03).clamp(0.45, 0.9);
+      return (0.9 - lvl * 0.008).clamp(0.5, 0.9);
     }
     return _infiniteStartInterval;
   }

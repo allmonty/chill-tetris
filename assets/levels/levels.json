@@ -3,7 +3,7 @@
   "levels": [
     {
       "level": 1,
-      "targetScore": 300,
+      "targetScore": 200,
       "initialPieces": [
         {"x": 0, "y": 19, "color": 0}, {"x": 1, "y": 19, "color": 0},
         {"x": 2, "y": 19, "color": 1}, {"x": 3, "y": 19, "color": 1},
@@ -13,7 +13,7 @@
     },
     {
       "level": 2,
-      "targetScore": 500,
+      "targetScore": 300,
       "initialPieces": [
         {"x": 0, "y": 18, "color": 2}, {"x": 1, "y": 18, "color": 2},
         {"x": 8, "y": 18, "color": 3}, {"x": 9, "y": 18, "color": 3},
@@ -24,7 +24,7 @@
     },
     {
       "level": 3,
-      "targetScore": 700,
+      "targetScore": 500,
       "initialPieces": [
         {"x": 8, "y": 17, "color": 6}, {"x": 9, "y": 17, "color": 6},
         {"x": 5, "y": 18, "color": 6}, {"x": 6, "y": 18, "color": 6},
@@ -38,7 +38,7 @@
     },
     {
       "level": 4,
-      "targetScore": 900,
+      "targetScore": 600,
       "initialPieces": [
         {"x": 1, "y": 17, "color": 4}, {"x": 4, "y": 17, "color": 4},
         {"x": 5, "y": 17, "color": 4}, {"x": 8, "y": 17, "color": 4},
@@ -53,7 +53,7 @@
     },
     {
       "level": 5,
-      "targetScore": 1100,
+      "targetScore": 700,
       "initialPieces": [
         {"x": 3, "y": 17, "color": 1}, {"x": 4, "y": 17, "color": 1},
         {"x": 5, "y": 17, "color": 1}, {"x": 6, "y": 17, "color": 1},
@@ -68,7 +68,7 @@
     },
     {
       "level": 6,
-      "targetScore": 1300,
+      "targetScore": 800,
       "initialPieces": [
         {"x": 1, "y": 17, "color": 0}, {"x": 2, "y": 17, "color": 0},
         {"x": 3, "y": 17, "color": 0}, {"x": 1, "y": 18, "color": 0},
@@ -82,7 +82,7 @@
     },
     {
       "level": 7,
-      "targetScore": 1500,
+      "targetScore": 1000,
       "initialPieces": [
         {"x": 4, "y": 16, "color": 5}, {"x": 5, "y": 16, "color": 5},
         {"x": 3, "y": 17, "color": 5}, {"x": 4, "y": 17, "color": 5},
@@ -98,7 +98,7 @@
     },
     {
       "level": 8,
-      "targetScore": 1700,
+      "targetScore": 1100,
       "initialPieces": [
         {"x": 0, "y": 16, "color": 2}, {"x": 1, "y": 16, "color": 2},
         {"x": 4, "y": 16, "color": 5}, {"x": 5, "y": 16, "color": 5},
@@ -116,7 +116,7 @@
     },
     {
       "level": 9,
-      "targetScore": 2000,
+      "targetScore": 1300,
       "initialPieces": [
         {"x": 2, "y": 16, "color": 5}, {"x": 3, "y": 16, "color": 5},
         {"x": 4, "y": 16, "color": 5}, {"x": 5, "y": 16, "color": 5},
@@ -129,7 +129,7 @@
     },
     {
       "level": 10,
-      "targetScore": 2300,
+      "targetScore": 1500,
       "initialPieces": [
         {"x": 4, "y": 15, "color": 5}, {"x": 5, "y": 15, "color": 4},
         {"x": 4, "y": 16, "color": 5}, {"x": 5, "y": 16, "color": 4},
@@ -147,7 +147,7 @@
     },
     {
       "level": 11,
-      "targetScore": 2600,
+      "targetScore": 1700,
       "initialPieces": [
         {"x": 1, "y": 14, "color": 2}, {"x": 2, "y": 14, "color": 2},
         {"x": 3, "y": 14, "color": 2}, {"x": 6, "y": 14, "color": 2},
@@ -170,7 +170,7 @@
     },
     {
       "level": 12,
-      "targetScore": 2900,
+      "targetScore": 1900,
       "initialPieces": [
         {"x": 3, "y": 15, "color": 4}, {"x": 4, "y": 15, "color": 4},
         {"x": 5, "y": 15, "color": 4}, {"x": 6, "y": 15, "color": 4},
@@ -186,7 +186,7 @@
     },
     {
       "level": 13,
-      "targetScore": 3300,
+      "targetScore": 2200,
       "initialPieces": [
         {"x": 3, "y": 15, "color": 3}, {"x": 4, "y": 15, "color": 3},
         {"x": 5, "y": 15, "color": 3}, {"x": 6, "y": 15, "color": 3},
@@ -203,7 +203,7 @@
     },
     {
       "level": 14,
-      "targetScore": 3600,
+      "targetScore": 2300,
       "initialPieces": [
         {"x": 1, "y": 15, "color": 6}, {"x": 3, "y": 15, "color": 6},
         {"x": 6, "y": 15, "color": 6}, {"x": 8, "y": 15, "color": 6},
@@ -225,7 +225,7 @@
     },
     {
       "level": 15,
-      "targetScore": 4000,
+      "targetScore": 2600,
       "initialPieces": [
         {"x": 2, "y": 15, "color": 3}, {"x": 3, "y": 15, "color": 3},
         {"x": 4, "y": 15, "color": 3}, {"x": 5, "y": 15, "color": 3},
@@ -247,7 +247,7 @@
     },
     {
       "level": 16,
-      "targetScore": 4400,
+      "targetScore": 2900,
       "initialPieces": [
         {"x": 4, "y": 15, "color": 6}, {"x": 5, "y": 15, "color": 6},
         {"x": 3, "y": 16, "color": 6}, {"x": 4, "y": 16, "color": 6},
@@ -262,7 +262,7 @@
     },
     {
       "level": 17,
-      "targetScore": 4800,
+      "targetScore": 3100,
       "initialPieces": [
         {"x": 4, "y": 14, "color": 3}, {"x": 5, "y": 14, "color": 3},
         {"x": 1, "y": 15, "color": 3}, {"x": 4, "y": 15, "color": 3},
@@ -279,7 +279,7 @@
     },
     {
       "level": 18,
-      "targetScore": 5200,
+      "targetScore": 3400,
       "initialPieces": [
         {"x": 2, "y": 15, "color": 0}, {"x": 3, "y": 15, "color": 0},
         {"x": 4, "y": 15, "color": 0}, {"x": 5, "y": 15, "color": 0},
@@ -301,7 +301,7 @@
     },
     {
       "level": 19,
-      "targetScore": 5600,
+      "targetScore": 3700,
       "initialPieces": [
         {"x": 0, "y": 15, "color": 2}, {"x": 2, "y": 15, "color": 2},
         {"x": 7, "y": 15, "color": 2}, {"x": 9, "y": 15, "color": 2},
@@ -320,7 +320,7 @@
     },
     {
       "level": 20,
-      "targetScore": 6000,
+      "targetScore": 3900,
       "initialPieces": [
         {"x": 0, "y": 15, "color": 4}, {"x": 4, "y": 15, "color": 4},
         {"x": 5, "y": 15, "color": 4}, {"x": 9, "y": 15, "color": 4},
@@ -342,7 +342,7 @@
     },
     {
       "level": 21,
-      "targetScore": 6400,
+      "targetScore": 4200,
       "initialPieces": [
         {"x": 3, "y": 15, "color": 0}, {"x": 4, "y": 15, "color": 0},
         {"x": 5, "y": 15, "color": 0}, {"x": 6, "y": 15, "color": 0},
@@ -359,7 +359,7 @@
     },
     {
       "level": 22,
-      "targetScore": 6800,
+      "targetScore": 4400,
       "initialPieces": [
         {"x": 3, "y": 15, "color": 4}, {"x": 4, "y": 15, "color": 4},
         {"x": 5, "y": 15, "color": 4}, {"x": 6, "y": 15, "color": 4},
@@ -374,7 +374,7 @@
     },
     {
       "level": 23,
-      "targetScore": 7200,
+      "targetScore": 4700,
       "initialPieces": [
         {"x": 2, "y": 15, "color": 1}, {"x": 3, "y": 15, "color": 1},
         {"x": 4, "y": 15, "color": 1}, {"x": 5, "y": 15, "color": 1},
@@ -393,7 +393,7 @@
     },
     {
       "level": 24,
-      "targetScore": 7600,
+      "targetScore": 5000,
       "initialPieces": [
         {"x": 1, "y": 14, "color": 5}, {"x": 8, "y": 14, "color": 5},
         {"x": 1, "y": 15, "color": 5}, {"x": 2, "y": 15, "color": 5},
@@ -416,7 +416,7 @@
     },
     {
       "level": 25,
-      "targetScore": 8000,
+      "targetScore": 5200,
       "initialPieces": [
         {"x": 2, "y": 14, "color": 6}, {"x": 3, "y": 14, "color": 6},
         {"x": 4, "y": 14, "color": 6}, {"x": 5, "y": 14, "color": 6},
@@ -443,7 +443,7 @@
     },
     {
       "level": 26,
-      "targetScore": 8500,
+      "targetScore": 5500,
       "initialPieces": [
         {"x": 1, "y": 14, "color": 0}, {"x": 8, "y": 14, "color": 0},
         {"x": 1, "y": 15, "color": 0}, {"x": 2, "y": 15, "color": 0},
@@ -467,7 +467,7 @@
     },
     {
       "level": 27,
-      "targetScore": 9000,
+      "targetScore": 5900,
       "initialPieces": [
         {"x": 4, "y": 14, "color": 6}, {"x": 5, "y": 14, "color": 6},
         {"x": 3, "y": 15, "color": 6}, {"x": 4, "y": 15, "color": 6},
@@ -485,7 +485,7 @@
     },
     {
       "level": 28,
-      "targetScore": 9500,
+      "targetScore": 6200,
       "initialPieces": [
         {"x": 4, "y": 13, "color": 4}, {"x": 5, "y": 13, "color": 4},
         {"x": 4, "y": 14, "color": 4}, {"x": 5, "y": 14, "color": 4},
@@ -506,7 +506,7 @@
     },
     {
       "level": 29,
-      "targetScore": 10000,
+      "targetScore": 6500,
       "initialPieces": [
         {"x": 2, "y": 13, "color": 2}, {"x": 7, "y": 13, "color": 2},
         {"x": 3, "y": 14, "color": 2}, {"x": 6, "y": 14, "color": 2},
@@ -529,7 +529,7 @@
     },
     {
       "level": 30,
-      "targetScore": 10500,
+      "targetScore": 6800,
       "initialPieces": [
         {"x": 5, "y": 14, "color": 4}, {"x": 6, "y": 14, "color": 4},
         {"x": 7, "y": 14, "color": 4}, {"x": 4, "y": 15, "color": 4},
@@ -544,7 +544,7 @@
     },
     {
       "level": 31,
-      "targetScore": 11000,
+      "targetScore": 7200,
       "initialPieces": [
         {"x": 4, "y": 14, "color": 0}, {"x": 5, "y": 14, "color": 0},
         {"x": 4, "y": 15, "color": 0}, {"x": 5, "y": 15, "color": 0},
@@ -563,7 +563,7 @@
     },
     {
       "level": 32,
-      "targetScore": 11500,
+      "targetScore": 7500,
       "initialPieces": [
         {"x": 3, "y": 14, "color": 0}, {"x": 4, "y": 14, "color": 0},
         {"x": 5, "y": 14, "color": 0}, {"x": 6, "y": 14, "color": 0},
@@ -577,7 +577,7 @@
     },
     {
       "level": 33,
-      "targetScore": 12000,
+      "targetScore": 7800,
       "initialPieces": [
         {"x": 1, "y": 13, "color": 2}, {"x": 2, "y": 13, "color": 2},
         {"x": 3, "y": 13, "color": 2}, {"x": 4, "y": 13, "color": 2},
@@ -602,7 +602,7 @@
     },
     {
       "level": 34,
-      "targetScore": 12500,
+      "targetScore": 8200,
       "initialPieces": [
         {"x": 1, "y": 13, "color": 2}, {"x": 8, "y": 13, "color": 2},
         {"x": 2, "y": 14, "color": 2}, {"x": 7, "y": 14, "color": 2},
@@ -615,7 +615,7 @@
     },
     {
       "level": 35,
-      "targetScore": 13000,
+      "targetScore": 8500,
       "initialPieces": [
         {"x": 4, "y": 12, "color": 0}, {"x": 5, "y": 12, "color": 0},
         {"x": 2, "y": 13, "color": 0}, {"x": 3, "y": 13, "color": 0},
@@ -644,7 +644,7 @@
     },
     {
       "level": 36,
-      "targetScore": 13600,
+      "targetScore": 8900,
       "initialPieces": [
         {"x": 4, "y": 12, "color": 6}, {"x": 5, "y": 12, "color": 6},
         {"x": 4, "y": 13, "color": 6}, {"x": 5, "y": 13, "color": 6},
@@ -661,7 +661,7 @@
     },
     {
       "level": 37,
-      "targetScore": 14200,
+      "targetScore": 9300,
       "initialPieces": [
         {"x": 0, "y": 14, "color": 0}, {"x": 2, "y": 14, "color": 0},
         {"x": 4, "y": 14, "color": 0}, {"x": 6, "y": 14, "color": 0},
@@ -682,7 +682,7 @@
     },
     {
       "level": 38,
-      "targetScore": 14800,
+      "targetScore": 9700,
       "initialPieces": [
         {"x": 0, "y": 14, "color": 3}, {"x": 4, "y": 14, "color": 3},
         {"x": 8, "y": 14, "color": 3}, {"x": 0, "y": 15, "color": 3},
@@ -702,7 +702,7 @@
     },
     {
       "level": 39,
-      "targetScore": 15400,
+      "targetScore": 10000,
       "initialPieces": [
         {"x": 2, "y": 12, "color": 2}, {"x": 3, "y": 12, "color": 2},
         {"x": 6, "y": 12, "color": 2}, {"x": 7, "y": 12, "color": 2},
@@ -724,7 +724,7 @@
     },
     {
       "level": 40,
-      "targetScore": 16000,
+      "targetScore": 10400,
       "initialPieces": [
         {"x": 6, "y": 11, "color": 5}, {"x": 7, "y": 11, "color": 5},
         {"x": 6, "y": 12, "color": 5}, {"x": 7, "y": 12, "color": 5},
@@ -751,7 +751,7 @@
     },
     {
       "level": 41,
-      "targetScore": 16600,
+      "targetScore": 10800,
       "initialPieces": [
         {"x": 1, "y": 11, "color": 6}, {"x": 3, "y": 11, "color": 6},
         {"x": 4, "y": 11, "color": 6}, {"x": 6, "y": 11, "color": 6},
@@ -784,7 +784,7 @@
     },
     {
       "level": 42,
-      "targetScore": 17200,
+      "targetScore": 11200,
       "initialPieces": [
         {"x": 1, "y": 12, "color": 0}, {"x": 2, "y": 12, "color": 0},
         {"x": 4, "y": 12, "color": 0}, {"x": 5, "y": 12, "color": 0},
@@ -816,7 +816,7 @@
     },
     {
       "level": 43,
-      "targetScore": 17800,
+      "targetScore": 11600,
       "initialPieces": [
         {"x": 2, "y": 13, "color": 4}, {"x": 3, "y": 13, "color": 4},
         {"x": 4, "y": 13, "color": 4}, {"x": 5, "y": 13, "color": 4},
@@ -838,7 +838,7 @@
     },
     {
       "level": 44,
-      "targetScore": 18400,
+      "targetScore": 12000,
       "initialPieces": [
         {"x": 1, "y": 14, "color": 1}, {"x": 2, "y": 14, "color": 1},
         {"x": 3, "y": 14, "color": 1}, {"x": 4, "y": 14, "color": 1},
@@ -871,7 +871,7 @@
     },
     {
       "level": 45,
-      "targetScore": 19000,
+      "targetScore": 12400,
       "initialPieces": [
         {"x": 2, "y": 12, "color": 2}, {"x": 3, "y": 12, "color": 2},
         {"x": 4, "y": 12, "color": 2}, {"x": 5, "y": 12, "color": 2},
@@ -900,7 +900,7 @@
     },
     {
       "level": 46,
-      "targetScore": 19800,
+      "targetScore": 12900,
       "initialPieces": [
         {"x": 1, "y": 11, "color": 3}, {"x": 2, "y": 11, "color": 3},
         {"x": 7, "y": 11, "color": 3}, {"x": 8, "y": 11, "color": 3},
@@ -936,7 +936,7 @@
     },
     {
       "level": 47,
-      "targetScore": 20600,
+      "targetScore": 13400,
       "initialPieces": [
         {"x": 2, "y": 11, "color": 4}, {"x": 3, "y": 11, "color": 4},
         {"x": 4, "y": 11, "color": 4}, {"x": 5, "y": 11, "color": 4},
@@ -969,7 +969,7 @@
     },
     {
       "level": 48,
-      "targetScore": 21400,
+      "targetScore": 14000,
       "initialPieces": [
         {"x": 1, "y": 10, "color": 5}, {"x": 2, "y": 10, "color": 5},
         {"x": 1, "y": 11, "color": 5}, {"x": 2, "y": 11, "color": 5},
@@ -1006,7 +1006,7 @@
     },
     {
       "level": 49,
-      "targetScore": 22200,
+      "targetScore": 14500,
       "initialPieces": [
         {"x": 1, "y": 10, "color": 6}, {"x": 2, "y": 10, "color": 6},
         {"x": 1, "y": 11, "color": 6}, {"x": 2, "y": 11, "color": 6},
@@ -1043,7 +1043,7 @@
     },
     {
       "level": 50,
-      "targetScore": 23000,
+      "targetScore": 15000,
       "initialPieces": [
         {"x": 0, "y": 8, "color": 4}, {"x": 2, "y": 8, "color": 4},
         {"x": 3, "y": 8, "color": 4}, {"x": 4, "y": 8, "color": 4},
