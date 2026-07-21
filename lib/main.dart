@@ -8,6 +8,8 @@ import 'screens/home_screen.dart';
 import 'screens/level_select_screen.dart';
 import 'screens/settings_screen.dart';
 import 'theme/app_theme.dart';
+import 'theme/palette_scope.dart';
+import 'theme/palette_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,6 +17,9 @@ Future<void> main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+  // Load the saved color palette before the first frame so the app opens in
+  // the right theme.
+  await PaletteService.instance.init();
   // Warm up audio; degrades silently if the platform has no output.
   await SoundService.instance.init();
   runApp(const ChillTetrisApp());
@@ -33,13 +38,20 @@ class _ChillTetrisAppState extends State<ChillTetrisApp>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // Rebuild so `buildAppTheme()` (below) recomputes when the palette changes.
+    // The screens themselves react via PaletteScope; this is only for the
+    // top-level ThemeData, which is built above the scope.
+    PaletteService.instance.current.addListener(_onPaletteChanged);
   }
 
   @override
   void dispose() {
+    PaletteService.instance.current.removeListener(_onPaletteChanged);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
+
+  void _onPaletteChanged() => setState(() {});
 
   /// Keep music in step with foreground/background. We run audio with
   /// `mixWithOthers` (no audio focus), so the OS no longer pauses our playback
@@ -73,6 +85,12 @@ class _ChillTetrisAppState extends State<ChillTetrisApp>
         title: 'Chill Tetris',
         debugShowCheckedModeBanner: false,
         theme: buildAppTheme(),
+        // Wrap the Navigator (not individual routes) so every screen can read
+        // the live palette via PaletteScope.of(context) and rebuild on change.
+        builder: (context, child) => PaletteScope(
+          notifier: PaletteService.instance.current,
+          child: child!,
+        ),
         home: const HomeScreen(),
         navigatorObservers: [_MusicKeepAliveObserver()],
         routes: {

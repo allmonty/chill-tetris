@@ -5,7 +5,7 @@ import '../audio/sound_service.dart';
 import '../game/game_mode.dart';
 import '../models/level_config.dart';
 import '../services/progress_service.dart';
-import '../theme/palette.dart';
+import '../theme/palette_scope.dart';
 import 'game_screen.dart';
 
 /// Stage-mode level picker: a grid of levels, each locked until the previous
@@ -51,7 +51,7 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final p = Palette.current;
+    final p = PaletteScope.of(context);
     final catalog = _catalog;
     final progress = _progress;
     return Scaffold(
@@ -101,7 +101,7 @@ class _LevelTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p = Palette.current;
+    final p = PaletteScope.of(context);
     return GestureDetector(
       onTap: onTap,
       child: Container(

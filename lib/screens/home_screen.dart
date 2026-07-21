@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../audio/sound_config.dart';
 import '../audio/sound_service.dart';
 import '../game/game_mode.dart';
-import '../theme/palette.dart';
+import '../theme/palette_scope.dart';
 import 'game_screen.dart';
 import 'level_select_screen.dart';
 import 'settings_screen.dart';
@@ -14,7 +14,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p = Palette.current;
+    final p = PaletteScope.of(context);
     return Scaffold(
       backgroundColor: p.background,
       body: SafeArea(
@@ -100,7 +100,7 @@ class _MenuButtonState extends State<_MenuButton> {
 
   @override
   Widget build(BuildContext context) {
-    final p = Palette.current;
+    final p = PaletteScope.of(context);
     return GestureDetector(
       onTapDown: (_) => setState(() => _pressed = true),
       onTapCancel: () => setState(() => _pressed = false),
@@ -141,7 +141,7 @@ class _SettingsButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p = Palette.current;
+    final p = PaletteScope.of(context);
     return GestureDetector(
       onTap: () {
         SoundService.instance.play(Sfx.uiTap);

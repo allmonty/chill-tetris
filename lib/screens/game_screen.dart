@@ -5,7 +5,7 @@ import '../game/game_mode.dart';
 import '../game/tetris_game.dart';
 import '../models/level_config.dart';
 import '../services/progress_service.dart';
-import '../theme/palette.dart';
+import '../theme/palette_scope.dart';
 import '../widgets/game_overlays.dart';
 import 'settings_screen.dart';
 
@@ -151,7 +151,7 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final p = Palette.current;
+    final p = PaletteScope.of(context);
     return PopScope(
       // We never let the framework pop directly — a back gesture routes through
       // the confirmation prompt instead (which pops itself once confirmed).

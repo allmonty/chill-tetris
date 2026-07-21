@@ -8,7 +8,7 @@ import '../audio/sound_service.dart';
 import '../game/game_mode.dart';
 import '../game/tetris_game.dart';
 import '../models/tetromino.dart';
-import '../theme/palette.dart';
+import '../theme/palette_scope.dart';
 
 /// A solid top bar that sits *above* the board (not floating over it): back
 /// button, the score/goal or score/speed readout, and a pause button.
@@ -28,7 +28,7 @@ class GameTopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p = Palette.current;
+    final p = PaletteScope.of(context);
     final isStage = game.mode is StageMode;
     return Container(
       decoration: BoxDecoration(
@@ -123,7 +123,7 @@ class _ScoreNumber extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p = Palette.current;
+    final p = PaletteScope.of(context);
     return Text(
       '$value',
       style: TextStyle(
@@ -143,7 +143,7 @@ class _Label extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p = Palette.current;
+    final p = PaletteScope.of(context);
     return Text(
       text,
       style: TextStyle(
@@ -163,7 +163,7 @@ class _Chip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p = Palette.current;
+    final p = PaletteScope.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
@@ -189,7 +189,7 @@ class _ProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p = Palette.current;
+    final p = PaletteScope.of(context);
     return SizedBox(
       width: 160,
       child: ClipRRect(
@@ -218,7 +218,7 @@ class _RoundIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p = Palette.current;
+    final p = PaletteScope.of(context);
     return GestureDetector(
       onTap: () {
         SoundService.instance.play(Sfx.uiTap);
@@ -245,7 +245,7 @@ class _NextPieceChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p = Palette.current;
+    final p = PaletteScope.of(context);
     return Container(
       width: 56,
       height: 44,
@@ -257,22 +257,27 @@ class _NextPieceChip extends StatelessWidget {
         valueListenable: nextPiece,
         builder: (_, type, _) => type == null
             ? const SizedBox.shrink()
-            : CustomPaint(painter: _NextPiecePainter(type)),
+            : CustomPaint(
+                painter: _NextPiecePainter(
+                  type,
+                  p.pieceColors[tetrominoes[type]!.colorIndex],
+                ),
+              ),
       ),
     );
   }
 }
 
 class _NextPiecePainter extends CustomPainter {
-  _NextPiecePainter(this.type);
+  _NextPiecePainter(this.type, this.color);
 
   final TetrominoType type;
+  final Color color;
 
   @override
   void paint(Canvas canvas, Size size) {
     final data = tetrominoes[type]!;
     final cells = data.rotations.first;
-    final color = Palette.current.pieceColors[data.colorIndex];
 
     // Bounding box of the rotation-0 shape, so the piece is centered whatever
     // its extent.
@@ -310,7 +315,8 @@ class _NextPiecePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_NextPiecePainter old) => old.type != type;
+  bool shouldRepaint(_NextPiecePainter old) =>
+      old.type != type || old.color != color;
 }
 
 /// Shared frame for the modal overlays (pause / game over / win).
@@ -323,7 +329,7 @@ class _ModalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p = Palette.current;
+    final p = PaletteScope.of(context);
     return Container(
       color: p.background.withValues(alpha: 0.82),
       alignment: Alignment.center,
@@ -384,7 +390,7 @@ class OverlayButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p = Palette.current;
+    final p = PaletteScope.of(context);
     return Padding(
       padding: const EdgeInsets.only(top: 12),
       child: SizedBox(
